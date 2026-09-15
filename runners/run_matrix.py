@@ -454,6 +454,7 @@ def gen_cell(cell_name):
     # харнесса, а не повод для повтора.
     src = "file"
     if answer is not None:
+        stdout_bytes = len(answer.encode("utf-8"))   # что вернул процесс
         wf = cell / "work" / "answer.md"
         if wf.is_file() and wf.stat().st_size >= MIN_ANSWER_BYTES:
             answer = wf.read_text(encoding="utf-8", errors="replace")
@@ -465,7 +466,7 @@ def gen_cell(cell_name):
         # лежал размер stdout (короткого подтверждения), что вводило в
         # заблуждение при разборе прогона
         meta["bytes"] = len(answer.encode("utf-8"))
-        meta["stdout_bytes"] = len((out or "").encode("utf-8"))
+        meta["stdout_bytes"] = stdout_bytes
         # копия на уровне ячейки: её читают judge.py/mech_score.py и аудит,
         # устроенные так же, как в platformv-arch-bench
         (cell / "answer.md").write_text(answer, encoding="utf-8")

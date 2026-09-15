@@ -3,14 +3,14 @@
 
 Матрица (ЗАФИКСИРОВАНА, см. PREREGISTRATION.md):
 
-  dsf (deepseek-flash), 2 повтора — 8 рук:
-      spine-arch, spine-min, claude-spine, theseus-spine,
-      claude-arch, claude-plain, theseus-plain, raw-llm
-  glm (glm-5.3-flash), 2 повтора — 6 рук (без spine-min и theseus-plain):
-      spine-arch, claude-spine, theseus-spine,
-      claude-arch, claude-plain, raw-llm
+  dsf (deepseek-flash), 2 повтора — 9 рук:
+      spine-arch, spine-min, claude-spine, theseus-spine, claude-arch,
+      claude-plain, theseus-plain, kimi-plain, raw-llm
+  glm (glm-5.3-flash), 2 повтора — 7 рук (без spine-min и theseus-plain):
+      spine-arch, claude-spine, theseus-spine, claude-arch, claude-plain,
+      kimi-plain, raw-llm
 
-  Итого на задачу 8·2 + 6·2 = 28 ячеек; при 6 задачах — 168.
+  Итого на задачу 9·2 + 7·2 = 32 ячейки; при 6 задачах — 192.
 
 Что видит рука в work/ (переменная — это и есть обработка):
   все агентные руки   TASK.md, CONTEXT.md, ACCEPTANCE.md (замороженная планка)
@@ -50,13 +50,15 @@ ARMS = {
     "claude-arch":   ("claude", "persona"),
     "claude-plain":  ("claude", None),
     "theseus-plain": ("theseus", None),
+    "kimi-plain":    ("kimi", None),
     "raw-llm":       ("raw", None),
 }
 MATRIX = {
     "dsf": ["spine-arch", "spine-min", "claude-spine", "theseus-spine",
-            "claude-arch", "claude-plain", "theseus-plain", "raw-llm"],
-    "glm": ["spine-arch", "claude-spine", "theseus-spine",
-            "claude-arch", "claude-plain", "raw-llm"],
+            "claude-arch", "claude-plain", "theseus-plain", "kimi-plain",
+            "raw-llm"],
+    "glm": ["spine-arch", "claude-spine", "theseus-spine", "claude-arch",
+            "claude-plain", "kimi-plain", "raw-llm"],
 }
 REPS = {"dsf": 2, "glm": 2}
 # Руки, для которых гоняется стадия 2 (преемник)

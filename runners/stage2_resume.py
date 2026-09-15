@@ -160,8 +160,11 @@ def main():
         m = re.match(r"^(.+?)__(.+)__(dsf|glm)__r(\d+)$", p.name)
         if not m or m.group(2) not in pc.STAGE2_ARMS:
             continue
-        if not (p / "answer.md").is_file():
-            continue                      # стадия 1 не сдана
+        # Стадия 1 сдана, если есть её учётная запись и сохранённая версия
+        # (answer.v1.md пишет инъекция). Проверка по answer.md не годится:
+        # после инъекции он удаляется, чтобы преемник писал финал сам.
+        if not (p / "answer.v1.md").is_file():
+            continue
         meta2 = p / "meta2.json"
         if meta2.is_file():
             try:

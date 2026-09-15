@@ -68,10 +68,29 @@ def _scratch(work, tag):
         shutil.rmtree(dst.parent, ignore_errors=True)
     shutil.copytree(work, dst, ignore=shutil.ignore_patterns(
         "__pycache__", "*.pyc"))
-    # проверяльщик — из репозитория, а не из ячейки (защита от правок руками)
+    # Проверяльщик — из репозитория, а не из ячейки (защита от правок руками).
+    # Каталог создаём сами: у рук без пакета `.contour/` в ячейке нет вовсе —
+    # они получают его только здесь, и рульсет для всех рук один и тот же.
+    (dst / ".contour").mkdir(exist_ok=True)
     shutil.copy2(BASE / "contour" / "gate_extra.py",
                  dst / ".contour" / "gate_extra.py")
     return dst
+
+
+def task_meta(task):
+    """Список требований задачи — так же, как он попадает в ячейку руки.
+
+    Скорер кладёт этот файл в скрипт-каталог САМ, для всех рук одинаково:
+    у рук без пакета `.contour/` в ячейке нет вовсе (иначе «без формата» не
+    было бы без формата), и без этого шага проверки контура падали бы у них
+    всегда — метрика мерила бы наличие каталога, а не документ.
+    """
+    files = pvlib.load_task_files(task)
+    import contour_prep as cp
+    return {"task": task,
+            "requirements": [{"id": rid, "kind": kind}
+                             for rid, kind, _ in cp.parse_requirements(
+                                 files["CONTEXT"])]}
 
 
 def run_gate(cell_name, task, work, answer_src, tag):
@@ -79,6 +98,10 @@ def run_gate(cell_name, task, work, answer_src, tag):
     if answer_src is None or not answer_src.is_file():
         return {"present": False}
     scratch = _scratch(work, f"{cell_name}__{tag}")
+    (scratch / ".contour").mkdir(exist_ok=True)
+    (scratch / ".contour" / "task_meta.json").write_text(
+        json.dumps(task_meta(task), ensure_ascii=False, indent=1),
+        encoding="utf-8")
     shutil.copy2(answer_src, scratch / "answer.md")
     ruleset = CONTOUR / task / "CONSTRAINTS.contour.yaml"
     cmd = ["arch-be", "control", "check", ".", "--constraints", str(ruleset),
