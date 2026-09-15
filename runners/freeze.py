@@ -17,13 +17,30 @@ from pathlib import Path
 
 BASE = Path(__file__).resolve().parent.parent
 LOCK = BASE / "prereg.lock.json"
+# ВХОДЫ ПРОГОНА: то, что влияет на генерации и на зачёт метрик. Всё это
+# после заморозки меняться не должно.
 GLOBS = ["tasks/**/*.md", "contour/**/*", "spine/**/*", "customization/*.md",
-         "runners/*.py", "defects/*.py", "runners/mech_overrides.yaml",
+         "defects/*.py", "runners/mech_overrides.yaml",
          "PREREGISTRATION.md", "AEF-1-CHECKLIST.md", "COI-POLICY.md"]
+# Скрипты прогона и замера — перечислены поимённо (а не маской runners/*.py),
+# потому что отчётные скрипты к входам не относятся: их правка не меняет ни
+# одной генерации и ни одной метрики, и раздувать ею список расхождений
+# заморозки было бы шумом.
+RUNNER_INPUTS = ["pvlib.py", "prepare_cells.py", "run_matrix.py",
+                 "stage2_resume.py", "contour_prep.py", "contour_metrics.py",
+                 "contour_score.py", "freeze.py", "mech_score.py", "judge.py",
+                 "judge_merge.py"]
+# Отчётные/QA-скрипты (НЕ входят в слепок): contour_report.py,
+# contour_effects.py, qa_contour.py, audit_extraction.py, qa_arm.py
 
 
 def digest():
     out = {}
+    for f in RUNNER_INPUTS:
+        p = BASE / "runners" / f
+        if p.is_file():
+            out[str(p.relative_to(BASE))] = hashlib.sha256(
+                p.read_bytes()).hexdigest()
     for g in GLOBS:
         for p in sorted(BASE.glob(g)):
             if p.is_file() and "__pycache__" not in str(p):
