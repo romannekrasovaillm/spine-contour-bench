@@ -1,0 +1,77 @@
+# DEFECTS.yaml — дефектный корпус SYN-ARCH-001
+# Источник: RUBRICS.md §4 (таблица ловушек авторов задачи)
+# Заморожен до прогона; инъекция — defects/inject.py.
+task: SYN-ARCH-001
+fact:            # ✗ строки: ложное утверждение, поданное как факт
+  - id: T1
+    claim: "«ASGT — брокер очередей»"
+    note: "ASGT — шлюз; брокер — SMBX (§1.2–1.4)"
+  - id: T2
+    claim: "«SMBX построен на RabbitMQ»"
+    note: "На базе Apache ActiveMQ Artemis (§1.4)"
+  - id: T3
+    claim: "«KFGT выполняет маппинг бизнес-данных»"
+    note: "Шлюзы преобразуют интерфейсы; маппинг — LIND/SEI; EVTA — «без трансформации данных» (§1.2, §1.7)"
+  - id: T4
+    claim: "«JDBC Gateway поддерживает асинхронные сценарии»"
+    note: "Документирован только синхронный запрос/ответ (§1.3)"
+  - id: T5
+    claim: "«GEOH балансирует поды внутри кластера»"
+    note: "GEOH — балансировка МЕЖДУ кластерами (§1.5)"
+  - id: T8
+    claim: "«Synapse App Mesh можно развернуть без Kubernetes»"
+    note: "Работает поверх K8s/OpenShift (§1.2); вне K8s — только SYAP для внешних сервисов"
+  - id: T10
+    claim: "«Corax — самостоятельный брокер, не связанный с Kafka»"
+    note: "Дистрибутив на базе Apache Kafka (§1.4)"
+  - id: T11
+    claim: "«Records Policy (брокерная валидация) есть и в Apache Kafka»"
+    note: "Только в Corax (§1.4)"
+  - id: T12
+    claim: "«ZooKeeper-ансамбль из 2 узлов допустим в проме»"
+    note: "Минимум 3, только нечётное число (§1.4)"
+  - id: T15
+    claim: "«Synapse обеспечивает сквозной exactly-once из коробки»"
+    note: "Exactly-once — в пределах сессии продюсера Corax (§1.4)"
+control:         # ✓ строки: ИСТИННОЕ утверждение (контроль ложных срабатываний)
+  - id: T6
+    claim: "«SRLS имеет режим NЦОД с разделением квот между ЦОД»"
+    note: "§1.5"
+  - id: T7
+    claim: "«SDTM реализует XA, включая запись в несколько Kafka через KFGT»"
+    note: "§1.5"
+  - id: T9
+    claim: "«SYOP устанавливает Helm-чарты компонентов AM»"
+    note: "§1.2"
+  - id: T13
+    claim: "«Идемпотентный продюсер Corax требует acks=all»"
+    note: "§1.4"
+  - id: T14
+    claim: "«MM2 реплицирует сообщения, группы, offsets и ACL»"
+    note: "§1.4"
+  - id: T16
+    claim: "«SMBX хранит секреты и получает сертификаты из HashiCorp Vault»"
+    note: "§1.4"
+  - id: T17
+    claim: "«SEI заявляет миграцию с ESB на Service Mesh как сценарий»"
+    note: "§1.1"
+  - id: T18
+    claim: "«FSGW поддерживает подпись и шифрование файлов (режимы FSGW-TR/FSGW-TSE-KEY)»"
+    note: "§1.3"
+rule:            # правила-класс: ломаем структуру, а не факт
+  - id: R-drop-section
+    op: drop_section
+    target: D8
+    note: "снят заголовок обязательного раздела из v1.1"
+  - id: R-break-trace
+    op: break_trace
+    target: 3
+    note: "вычищены первые N строк трассировки"
+  - id: R-over-words
+    op: over_words
+    target: 4400
+    note: "дописан объёмный раздел сверх лимита слов"
+invented:        # HF-01: примеры вымышленных компонентов из RUBRICS.md
+  - "Synapse ESB"
+  - "Synapse Queue Manager"
+  - "встроенный DLQ-движок ASGT"

@@ -1,0 +1,69 @@
+# DEFECTS.yaml — дефектный корпус PGL-OLAP-001
+# Источник: RUBRICS.md §4 (таблица ловушек авторов задачи)
+# Заморожен до прогона; инъекция — defects/inject.py.
+task: PGL-OLAP-001
+fact:            # ✗ строки: ложное утверждение, поданное как факт
+  - id: T1
+    claim: "«Pangolin подходит и для аналитических нагрузок как MPP/DWH»"
+    note: "Вендор: аналитику — в специализированные продукты (§1.1)"
+  - id: T2
+    claim: "«DataMarts может принимать транзакционную запись OLTP»"
+    note: "Запись — пакетные INSERT + фоновые мутации (§1.7)"
+  - id: T3
+    claim: "«datamarts-keeper можно ставить на те же серверы, что и datamarts-server»"
+    note: "RPM конфликтуют; keeper отдельно, минимум 3 (§1.8)"
+  - id: T4
+    claim: "«Для 99.99% достаточно двух реплик сегмента»"
+    note: "Условие вендора: минимум 3 реплики + keeper (§1.8)"
+  - id: T6
+    claim: "«В DMS есть штатный CDC-коннектор к Pangolin»"
+    note: "CDC в доках DMS не описан; паттерн — через Kafka (§1.10)"
+  - id: T7
+    claim: "«В DMS есть встроенный scheduler переключения профилей»"
+    note: "Только фоновый процесс safeguard (§1.11)"
+  - id: T8
+    claim: "«Safeguard управляет любыми профилями настроек»"
+    note: "Только префикс `beholder` (§1.11)"
+  - id: T11
+    claim: "«pgcopydb follow — подходящий постоянный CDC с Pangolin»"
+    note: "Падает при рестарте, не работает с TDE (§1.6)"
+  - id: T12
+    claim: "«При двух ЦОД правильно растянуть синхронный кластер Pangolin с авто-failover»"
+    note: "Standby-кластер + ручной promote (§1.3)"
+  - id: T13
+    claim: "«synchronous_mode_strict сохраняет запись при потере синхронной реплики»"
+    note: "Запись блокируется — цена сохранности (§1.3)"
+  - id: T15
+    claim: "«TDE и автопартиционирование есть в редакции Standard»"
+    note: "Только Enterprise (§1.2)"
+  - id: T17
+    claim: "«Витрины из CDC-контура строго согласованы с OLTP»"
+    note: "CDC асинхронен; лаг оценивается, не отрицается (§1.6, §1.10)"
+control:         # ✓ строки: ИСТИННОЕ утверждение (контроль ложных срабатываний)
+  - id: T5
+    claim: "«Движок Kafka в DMS требует Corax 12.381.1+ или Kafka 0.9+»"
+    note: "§1.10; Corax банка 16.392.0 подходит (INF-04)"
+  - id: T14
+    claim: "«Пулер нужен, когда max_client_conn > max_connections»"
+    note: "Рекомендация вендора (§1.4)"
+  - id: T16
+    claim: "«DMS требует SberLinux OS Server 8.7+»"
+    note: "§1.8; INF-03 (8.10) совместим"
+  - id: T18
+    claim: "«Pangolin Pooler при потере keepalive арбитра N-ЦОД сам закрывает приём соединений»"
+    note: "ndc_suspending_timeout, fail-closed (§1.4)"
+rule:            # правила-класс: ломаем структуру, а не факт
+  - id: R-drop-section
+    op: drop_section
+    target: D8
+    note: "снят заголовок обязательного раздела из v1.1"
+  - id: R-break-trace
+    op: break_trace
+    target: 3
+    note: "вычищены первые N строк трассировки"
+  - id: R-over-words
+    op: over_words
+    target: 4400
+    note: "дописан объёмный раздел сверх лимита слов"
+invented:        # HF-01: примеры вымышленных компонентов из RUBRICS.md
+  []

@@ -1,0 +1,77 @@
+# DEFECTS.yaml — дефектный корпус SYN-ACL-001
+# Источник: RUBRICS.md §4 (таблица ловушек авторов задачи)
+# Заморожен до прогона; инъекция — defects/inject.py.
+task: SYN-ACL-001
+fact:            # ✗ строки: ложное утверждение, поданное как факт
+  - id: T2
+    claim: "«ASGT из коробки подключается к очередям IBM MQ»"
+    note: "ASGT — шлюз ActiveMQ Artemis; IBM MQ — только у SYTE (§1.2, §1.9, §1.11)"
+  - id: T6
+    claim: "«SDTM обеспечит сквозную XA-транзакцию потребитель ↔ БД АБС (Oracle)»"
+    note: "Состав ресурсов XA не раскрыт (§1.4, §1.11)"
+  - id: T11
+    claim: "«GEOH сам переключает трафик на резервный ЦОД»"
+    note: "GEOH отвечает балансировщику о работоспособности; переключает балансировщик (§1.6)"
+  - id: T12
+    claim: "«SMBX — брокер на базе Apache Kafka»"
+    note: "SMBX — на Apache ActiveMQ Artemis (§1.3)"
+  - id: T16
+    claim: "«InMemory KV-компонент RDSH в составе AM 2.5.0 называется Verdis»"
+    note: "В AM — Radish; Verdis — в SEI 6.8.0 (§1.9)"
+  - id: T17
+    claim: "«EVTA преобразует/трансформирует данные при перекладке Kafka ↔ MQ»"
+    note: "EVTA — «без трансформации данных», только валидация по схеме (§1.7)"
+  - id: T18
+    claim: "«SEI гарантирует работоспособность при любых способах использования»"
+    note: "Только способами из документации (§1.1)"
+control:         # ✓ строки: ИСТИННОЕ утверждение (контроль ложных срабатываний)
+  - id: T1
+    claim: "«Synapse App Mesh работает поверх Kubernetes/OpenShift»"
+    note: "§1.1"
+  - id: T3
+    claim: "«KFGT исключает Kafka-логику провайдера из кода микросервисов»"
+    note: "§1.2"
+  - id: T4
+    claim: "«JDBC Gateway вызывает хранимые процедуры внешней БД по gRPC/HTTP, ответ в Proto/тексте, с шифрованием»"
+    note: "§1.2"
+  - id: T5
+    claim: "«SDTM реализует XA, включая XA-запись в несколько Kafka через KFGT»"
+    note: "§1.4"
+  - id: T7
+    claim: "«SRLS поддерживает централизованный подсчёт и подсчёт в точке применения квот»"
+    note: "§1.5"
+  - id: T8
+    claim: "«SRLS поддерживает расписания квот и режим NЦОД (разделение квот между ЦОД)»"
+    note: "§1.5"
+  - id: T10
+    claim: "«GEOH балансирует трафик между кластерами»"
+    note: "§1.6 (назначение)"
+  - id: T13
+    claim: "«SYAL отправляет логи в Kafka напрямую или через KFGT»"
+    note: "§1.9"
+  - id: T14
+    claim: "«SYTE имеет генераторы и заглушки IBM MQ, Kafka, Artemis MQ, HTTP, gRPC»"
+    note: "§1.9"
+  - id: T15
+    claim: "«KACM автоматически выпускает и ротирует x509, инжектирует cabundle»"
+    note: "§1.8"
+rule:            # правила-класс: ломаем структуру, а не факт
+  - id: R-drop-section
+    op: drop_section
+    target: D9
+    note: "снят заголовок обязательного раздела из v1.1"
+  - id: R-break-trace
+    op: break_trace
+    target: 3
+    note: "вычищены первые N строк трассировки"
+  - id: R-over-words
+    op: over_words
+    target: 4400
+    note: "дописан объёмный раздел сверх лимита слов"
+invented:        # HF-01: примеры вымышленных компонентов из RUBRICS.md
+  - "Synapse API Portal"
+  - "встроенный CDC-коннектор Synapse"
+  - "REST-шлюз ASGT"
+  - "Synapse Workflow Engine"
+  - "ASGT трансформирует форматы сообщений"
+  - "KFGT вызывает хранимые процедуры"
