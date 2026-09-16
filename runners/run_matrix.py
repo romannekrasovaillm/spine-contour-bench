@@ -359,6 +359,13 @@ def run_once(task, cond, model, cell, prompt_name="prompt.txt"):
         if not err and finish == "length":
             err = "ответ обрезан (finish=length)"
             answer = None  # обрезанный ответ считаем сбоем, см. PREREGISTRATION
+        # У raw-руки нет файловой системы, и модель может ответить служебным
+        # подтверждением вместо документа («Готово: answer.md создан»). Проверка
+        # размера здесь та же, что в общем пути, иначе такой ответ попал бы в
+        # зачёт как «сданная работа» (D10).
+        if answer and len(answer.encode("utf-8")) < MIN_ANSWER_BYTES:
+            err = f"ответ слишком короткий ({len(answer.encode())} байт)"
+            answer = None
         return (answer or None), cmd_str, (0 if not err else 1), note, err
     argv = build_cmd(task, cond, model, prompt, uniq=cell.name)
     cmd_str = redact(" ".join(a if a != prompt else "$(cat prompt.txt)"

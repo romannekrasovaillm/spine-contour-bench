@@ -74,6 +74,19 @@ DELIVERABLE_LINE = (
     "в stdout — короткое подтверждение готовности (документ в stdout не "
     "дублируй).\n\n"
 )
+# У руки raw-llm нет файловой системы: это одиночный POST без инструментов.
+# Просьба «запиши файл» приводила к тому, что deepseek-flash отвечал
+# подтверждением («Готово: answer.md создан», 90–425 Б) вместо документа —
+# то есть рука отчитывалась о действии, которого не могла совершить (найдено
+# на прогоне, D10). Для неё документ и передача запрашиваются текстом.
+RAW_DELIVERABLE_LINE = (
+    "Верни итоговый документ целиком текстом ответа.\n\n"
+)
+RAW_TRANSFER_LINE = (
+    "В конце документа добавь раздел «Передача работы»: что сделано, какие "
+    "решения приняты и почему, что осталось незакрытым и что делать, если "
+    "принятое решение окажется неверным.\n\n"
+)
 ACCEPTANCE_LINE = (
     "Планка приёмки — в ACCEPTANCE.md: требования INF/NFR/SEC, которые "
     "нужно трассировать, обязательные артефакты и правила hard-fail.\n\n"
@@ -191,9 +204,12 @@ def gen_spine_pack(task):
 
 def build_prompt(task, arm):
     files = pvlib.load_task_files(task)
-    p = WRAPPER + DELIVERABLE_LINE + ACCEPTANCE_LINE + TRANSFER_LINE
-    if ARMS[arm][1] == "pack":
-        p += SPINE_LINE
+    if ARMS[arm][0] == "raw":
+        p = WRAPPER + RAW_DELIVERABLE_LINE + ACCEPTANCE_LINE + RAW_TRANSFER_LINE
+    else:
+        p = WRAPPER + DELIVERABLE_LINE + ACCEPTANCE_LINE + TRANSFER_LINE
+        if ARMS[arm][1] == "pack":
+            p += SPINE_LINE
     p += ("# TASK.md\n\n" + files["TASK"].strip() + "\n\n"
           "# CONTEXT.md\n\n" + files["CONTEXT"].strip() + "\n")
     return p
