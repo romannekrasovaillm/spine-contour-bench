@@ -28,6 +28,7 @@ import subprocess
 import sys
 import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -152,6 +153,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--only-glob", default="*")
     ap.add_argument("--limit", type=int, default=0)
+    ap.add_argument("--jobs", type=int, default=1,
+                    help="сколько преемников гонять параллельно (по умолчанию 1)")
     a = ap.parse_args()
     names = []
     for p in sorted(CELLS.iterdir()):
@@ -177,12 +180,27 @@ def main():
         names.append(p.name)
     if a.limit:
         names = names[:a.limit]
-    print(f"ячеек стадии 2 к прогону: {len(names)}", flush=True)
-    for n in names:
+    print(f"ячеек стадии 2 к прогону: {len(names)}; параллельно: {a.jobs}",
+          flush=True)
+
+    def safe(n):
         try:
             process(n)
         except Exception as e:  # noqa: BLE001
             print(f"{n}: СБОЙ ОРКЕСТРАЦИИ {type(e).__name__}: {e}", flush=True)
+
+    if a.jobs <= 1:
+        for n in names:
+            safe(n)
+        return 0
+    # Параллельный прогон. До 20:00 16.09 стадия 2 шла по одной ячейке —
+    # это оказалось узким местом: glm-ячейки берут 15–30 мин, и хвост из 38
+    # ячеек растягивался на ~12 часов. Параллелизм меняет только пропускную
+    # способность: промпты, модели, бюджет попытки и ретраи те же, а каналы
+    # по-прежнему ограничены семафорами rm.SEM (claude ≤ PVBENCH_CLAUDE_PAR,
+    # glm ≤ PVBENCH_GLM_PAR) — они и защищают от 429 (D22 первого бенчмарка).
+    with ThreadPoolExecutor(max_workers=a.jobs) as ex:
+        list(ex.map(safe, names))
     return 0
 
 
