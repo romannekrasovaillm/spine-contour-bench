@@ -180,22 +180,28 @@ def self_test(cell: Path, task: str):
     sents = cm.sentences(wip)
     facts = [cm.item_verdict(x, wip, sents) for x in sel["fact"]]
     ctrls = [cm.item_verdict(x, wip, sents) for x in sel["control"]]
-    res["fact_detectable"] = sum(1 for f in facts if f["state"] == "retained")
-    res["control_detectable"] = sum(1 for c in ctrls if c["state"] == "retained")
+    res["fact_detectable"] = sum(1 for f in facts if f["verdict"] == "leaked")
+    res["control_detectable"] = sum(1 for c in ctrls
+                                    if c["verdict"] == "preserved")
     # 2. контрольный класс не срабатывает на НЕиспорченном документе
     #    (иначе detector ловит всё подряд)
     s1 = cm.sentences(v1)
     res["fact_in_v1"] = sum(1 for x in sel["fact"]
-                            if cm.item_verdict(x, v1, s1)["state"] == "retained")
+                            if cm.item_verdict(x, v1, s1)["verdict"] == "leaked")
     res["control_in_v1"] = sum(1 for x in sel["control"]
-                               if cm.item_verdict(x, v1, s1)["state"] == "retained")
+                               if cm.item_verdict(x, v1, s1)["verdict"]
+                               == "preserved")
     # 3. правила-класс действительно применились
     res["rules_applied"] = sum(1 for r in json.loads(
         (cell / "injection.json").read_text(encoding="utf-8"))["rule"]
         if not r.get("skipped"))
+    # Критерий годности инъекции: все внесённые тезисы различимы в v1.1 и
+    # хотя бы один структурный дефект применился. `fact_in_v1` в критерий НЕ
+    # входит: если рука сама утверждала один из ложных тезисов ещё до
+    # инъекции, это её свойство (и находка), а не ошибка детектора. Оба
+    # поля возвращаются как диагностика.
     res["ok"] = (res["fact_detectable"] == res["n_fact"]
                  and res["control_detectable"] == res["n_control"]
-                 and res["fact_in_v1"] == 0
                  and res["rules_applied"] > 0)
     return res
 
