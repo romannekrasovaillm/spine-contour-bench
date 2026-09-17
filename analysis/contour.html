@@ -1,0 +1,342 @@
+<title>Замер контура</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=PT+Serif:ital,wght@0,400;0,700;1,400&display=swap">
+
+<style>
+  :root{
+    --paper:#F2F4F7; --card:#FFFFFF; --ink:#16202B; --ink-soft:#5A6675;
+    --rule:#D3DAE3; --grid:rgba(14,110,122,.13);
+    --gain:#0E6E7A; --gain-soft:rgba(14,110,122,.10);
+    --loss:#A63A2A; --loss-soft:rgba(166,58,42,.10);
+    --flat:#8B97A6;
+    --shadow:0 1px 2px rgba(22,32,43,.06), 0 8px 24px -12px rgba(22,32,43,.18);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#0F151B; --card:#151D25; --ink:#E7EDF3; --ink-soft:#93A2B2;
+      --rule:#25313C; --grid:rgba(79,179,191,.16);
+      --gain:#4FB3BF; --gain-soft:rgba(79,179,191,.14);
+      --loss:#D97A63; --loss-soft:rgba(217,122,99,.14);
+      --flat:#6B7A8A;
+      --shadow:0 1px 2px rgba(0,0,0,.5), 0 10px 30px -14px rgba(0,0,0,.7);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#0F151B; --card:#151D25; --ink:#E7EDF3; --ink-soft:#93A2B2;
+    --rule:#25313C; --grid:rgba(79,179,191,.16);
+    --gain:#4FB3BF; --gain-soft:rgba(79,179,191,.14);
+    --loss:#D97A63; --loss-soft:rgba(217,122,99,.14);
+    --flat:#6B7A8A;
+    --shadow:0 1px 2px rgba(0,0,0,.5), 0 10px 30px -14px rgba(0,0,0,.7);
+  }
+
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"PT Serif",Georgia,serif; font-size:17px; line-height:1.62;
+  }
+  .wrap{max-width:1060px; margin:0 auto; padding:56px 22px 72px}
+  .col{max-width:64ch}
+
+  h1,h2,h3,.num,.lbl,th,.chip,.axis,.foot{font-family:"Golos Text",system-ui,sans-serif}
+  h1{font-size:clamp(30px,5.2vw,50px); line-height:1.06; letter-spacing:-.02em;
+     font-weight:700; margin:0 0 14px; text-wrap:balance; max-width:22ch}
+  h2{font-size:clamp(20px,2.6vw,26px); line-height:1.2; font-weight:600;
+     letter-spacing:-.01em; margin:0 0 8px; text-wrap:balance}
+  h3{font-size:15px; font-weight:600; letter-spacing:.01em; margin:0 0 6px}
+  p{margin:0 0 14px}
+  .lead{font-size:clamp(17px,2.1vw,20px); color:var(--ink-soft); max-width:52ch}
+  .eyebrow{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11.5px;
+    text-transform:uppercase; letter-spacing:.16em; color:var(--gain);
+    font-weight:500; margin:0 0 18px}
+
+  .rule{border:0; border-top:1px solid var(--rule); margin:44px 0}
+
+  /* ---- заголовочная связка: главный вывод + наклонная диаграмма ---- */
+  .hero{display:grid; grid-template-columns:minmax(280px,1fr) minmax(300px,1.15fr);
+        gap:40px 48px; align-items:start}
+  @media (max-width:820px){ .hero{grid-template-columns:1fr} }
+
+  .thesis{font-size:clamp(18px,2.4vw,23px); line-height:1.42; font-weight:400;
+    margin:22px 0 0; max-width:30ch}
+  .thesis b{font-weight:700}
+  .thesis .up{color:var(--gain); font-weight:700}
+  .thesis .down{color:var(--loss); font-weight:700}
+
+  figure{margin:0}
+  .chart{overflow-x:auto; background:var(--card); border:1px solid var(--rule);
+         border-radius:3px; padding:10px 6px 4px; box-shadow:var(--shadow)}
+  svg{display:block; width:100%; height:auto; min-width:520px}
+  figcaption{font-size:13.5px; color:var(--ink-soft); margin:10px 2px 0; max-width:60ch}
+
+  /* ---- три числа ---- */
+  .numbers{display:grid; gap:1px; background:var(--rule); border:1px solid var(--rule);
+           border-radius:3px; overflow:hidden; margin:8px 0 0}
+  .figrow{display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--rule)}
+  @media (max-width:700px){ .figrow{grid-template-columns:1fr} }
+  .fig{background:var(--card); padding:22px 20px 20px}
+  .fig .v{font-family:"IBM Plex Mono",ui-monospace,monospace; font-weight:600;
+    font-size:clamp(26px,3.4vw,34px); letter-spacing:-.02em; line-height:1;
+    font-variant-numeric:tabular-nums}
+  .fig .v.g{color:var(--gain)} .fig .v.r{color:var(--loss)}
+  .fig .k{font-size:14px; color:var(--ink-soft); margin-top:9px; display:block}
+  .fig .tag{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px;
+    letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft);
+    display:block; margin-bottom:11px}
+
+  /* ---- три оси ---- */
+  .axes{display:grid; gap:18px; grid-template-columns:repeat(3,1fr); margin-top:26px}
+  @media (max-width:880px){ .axes{grid-template-columns:1fr} }
+  .axis{background:var(--card); border:1px solid var(--rule); border-radius:3px;
+        padding:20px 20px 18px; display:flex; flex-direction:column; gap:9px}
+  .axis .state{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px;
+    letter-spacing:.12em; text-transform:uppercase; padding:3px 8px; border-radius:2px;
+    align-self:flex-start}
+  .state.stable{color:var(--gain); background:var(--gain-soft)}
+  .state.flip{color:var(--loss); background:var(--loss-soft)}
+  .state.base{color:var(--ink-soft); background:rgba(139,151,166,.14)}
+  .axis p{margin:0; font-size:15.5px; color:var(--ink-soft)}
+  .axis .val{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:14px;
+    color:var(--ink); font-variant-numeric:tabular-nums}
+  .axis h3{font-size:17px; font-weight:600}
+
+  /* ---- лес интервалов ---- */
+  .forest{display:grid; gap:2px; background:var(--rule); border:1px solid var(--rule);
+          border-radius:3px; overflow:hidden}
+  .frow{display:grid; grid-template-columns:minmax(210px,1.05fr) 132px minmax(140px,1fr);
+        align-items:center; gap:16px; background:var(--card); padding:14px 18px}
+  @media (max-width:760px){
+    .frow{grid-template-columns:1fr; gap:9px; padding:16px 16px}
+  }
+  .frow .nm{font-size:15.5px}
+  .frow .nm small{display:block; color:var(--ink-soft); font-size:13px; margin-top:2px;
+    font-family:"IBM Plex Mono",ui-monospace,monospace}
+  .frow .d{font-family:"IBM Plex Mono",ui-monospace,monospace; font-weight:600;
+    font-size:17px; font-variant-numeric:tabular-nums; text-align:right}
+  @media (max-width:760px){ .frow .d{text-align:left} }
+  .d.g{color:var(--gain)} .d.r{color:var(--loss)} .d.n{color:var(--flat)}
+  .track{overflow-x:auto}
+  .track svg{min-width:240px; width:100%; height:34px; display:block}
+
+  /* ---- оговорки ---- */
+  .caveats{background:var(--card); border:1px solid var(--rule); border-left:3px solid var(--loss);
+           border-radius:3px; padding:22px 24px; margin-top:8px}
+  .caveats ul{margin:0; padding-left:20px; color:var(--ink-soft); font-size:15.5px}
+  .caveats li{margin:7px 0}
+  .caveats b{color:var(--ink)}
+
+  .foot{margin-top:34px; font-size:13.5px; color:var(--ink-soft);
+        display:flex; flex-wrap:wrap; gap:6px 18px; align-items:baseline}
+  a{color:var(--gain); text-underline-offset:3px}
+  a:focus-visible,summary:focus-visible{outline:2px solid var(--gain); outline-offset:2px}
+  code{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:.92em;
+       background:var(--gain-soft); padding:1px 5px; border-radius:2px}
+  @media (prefers-reduced-motion:reduce){ *{transition:none !important; animation:none !important} }
+</style>
+
+<div class="wrap">
+
+  <p class="eyebrow">Бенчмарк контура · 192 ячейки · 6 задач · 9 рук · 2 модели</p>
+
+  <div class="hero">
+    <div>
+      <h1>Рука, последняя на одной модели, — первая на другой</h1>
+      <p class="lead">Замер отвечает на вопрос «что внедрять»: формат вокруг документа, оболочку, которая его исполняет, или модель под ней. Ответы разные — и один из них не переносится.</p>
+      <p class="thesis">CLI Spine ловит дефектов <b>меньше</b> Claude Code на модели <code>dsf</code> (<span class="down">−0.333</span>) и <b>больше</b> на <code>glm</code> (<span class="up">+0.347</span> по восстановлению структуры). Значит «кто лучше» — это свойство <b>связки «оболочка × модель»</b>, а не продукта.</p>
+    </div>
+
+    <figure>
+      <div class="chart">
+        <svg viewBox="0 0 720 366" role="img" aria-label="Поймано внесённых дефектов по рукам: слева модель dsf, справа glm. Линия spine-arch круто идёт вверх, claude-spine почти горизонтальна, theseus-spine опускается.">
+          <!-- сетка -->
+          <g stroke="var(--grid)" stroke-width="1">
+            <line x1="200" y1="48.9" x2="520" y2="48.9"/>
+            <line x1="200" y1="138.5" x2="520" y2="138.5"/>
+            <line x1="200" y1="228" x2="520" y2="228"/>
+            <line x1="200" y1="317.6" x2="520" y2="317.6"/>
+          </g>
+          <g fill="var(--ink-soft)" font-family="IBM Plex Mono,monospace" font-size="12" text-anchor="end">
+            <text x="118" y="53">1.00</text>
+            <text x="118" y="142.5">0.80</text>
+            <text x="118" y="232">0.60</text>
+            <text x="118" y="321.6">0.40</text>
+          </g>
+          <g fill="var(--ink-soft)" font-family="IBM Plex Mono,monospace" font-size="13" text-anchor="middle">
+            <text x="200" y="30">модель dsf</text>
+            <text x="520" y="30">модель glm</text>
+          </g>
+
+          <!-- базовая линия: рука без формата -->
+          <line x1="200" y1="317.6" x2="520" y2="147.4" stroke="var(--flat)" stroke-width="2"
+                stroke-dasharray="6 5" opacity=".85"/>
+          <circle cx="200" cy="317.6" r="5" fill="var(--paper)" stroke="var(--flat)" stroke-width="2.5"/>
+          <circle cx="520" cy="147.4" r="5" fill="var(--paper)" stroke="var(--flat)" stroke-width="2.5"/>
+          <text x="536" y="141" fill="var(--flat)" font-family="Golos Text,sans-serif" font-size="13.5">без формата</text>
+
+          <!-- theseus-spine: падает -->
+          <line x1="200" y1="84.8" x2="520" y2="147.4" stroke="var(--loss)" stroke-width="2.6"/>
+          <circle cx="200" cy="84.8" r="4.5" fill="var(--loss)"/>
+          <circle cx="520" cy="147.4" r="4.5" fill="var(--loss)"/>
+          <text x="536" y="170" fill="var(--loss)" font-family="Golos Text,sans-serif" font-size="13.5">theseus</text>
+
+          <!-- claude-spine: ровно -->
+          <line x1="200" y1="84.8" x2="520" y2="80.3" stroke="var(--flat)" stroke-width="2.6"/>
+          <circle cx="200" cy="84.8" r="4.5" fill="var(--flat)"/>
+          <circle cx="520" cy="80.3" r="4.5" fill="var(--flat)"/>
+          <text x="536" y="72" fill="var(--ink-soft)" font-family="Golos Text,sans-serif" font-size="13.5">Claude Code</text>
+
+          <!-- spine-arch: взлетает -->
+          <line x1="200" y1="219.1" x2="520" y2="62.4" stroke="var(--gain)" stroke-width="3.4"/>
+          <circle cx="200" cy="219.1" r="5.5" fill="var(--gain)"/>
+          <circle cx="520" cy="62.4" r="5.5" fill="var(--gain)"/>
+          <text x="536" y="52" fill="var(--gain)" font-family="Golos Text,sans-serif" font-size="13.5" font-weight="600">CLI Spine</text>
+
+          <!-- подписи значений -->
+          <g font-family="IBM Plex Mono,monospace" font-size="12" fill="var(--ink)">
+            <text x="188" y="207" text-anchor="end">0.62</text>
+            <text x="188" y="73" text-anchor="end">0.92</text>
+            <text x="532" y="52">0.97</text>
+            <text x="532" y="92">0.93</text>
+            <text x="532" y="180">0.78</text>
+          </g>
+        </svg>
+      </div>
+      <figcaption>Поймано внесённых дефектов, обе руки с одним и тем же форматом Spine. Бирюзовый — рука выросла на glm, кирпичный — упала, серый пунктир — рука без формата (база). Три линии перекрещиваются: порядок рук между моделями не сохраняется.</figcaption>
+    </figure>
+  </div>
+
+  <div class="numbers" style="margin-top:46px">
+    <div class="figrow">
+      <div class="fig">
+        <span class="tag">формат → передача работы</span>
+        <span class="v g">+1.000</span>
+        <span class="k">полнота пакета передачи внутри Claude Code; <b>+0.909</b> внутри Theseus, <b>+0.800</b> внутри CLI Spine. У рук без формата пакета нет вовсе — <b>0.00</b>.</span>
+      </div>
+      <div class="fig">
+        <span class="tag">формат → ловля дефектов</span>
+        <span class="v g">+0.514</span>
+        <span class="k">на модели <code>dsf</code> внутри Claude Code. На <code>glm</code> тот же эффект всего <b>+0.167</b> и уже не значим: у модели без формата база выше (0.78 против 0.40).</span>
+      </div>
+      <div class="fig">
+        <span class="tag">харнесс → ловля дефектов</span>
+        <span class="v r">−0.333</span>
+        <span class="k">CLI Spine против Claude Code при <b>одинаковом</b> формате, модель <code>dsf</code>. Эта разница больше, чем вклад формата на другой модели.</span>
+      </div>
+    </div>
+  </div>
+
+  <hr class="rule">
+
+  <div class="col">
+    <h2>Три оси ведут себя по-разному</h2>
+    <p>Формат воспроизводится, оболочка меняет знак, модель задаёт базу. Читать их по отдельности бессмысленно.</p>
+  </div>
+
+  <div class="axes">
+    <div class="axis">
+      <span class="state stable">воспроизводится</span>
+      <h3>Формат</h3>
+      <p>Вклад в передачу работы одинаков во всех трёх оболочках и на обеих моделях: пакет <span class="val">+1.000 / +0.909 / +0.800</span>. Знак не меняется, нигде интервал не включает ноль.</p>
+      <p class="val">Зависит только от того, положили ли вы пакет.</p>
+    </div>
+    <div class="axis">
+      <span class="state flip">меняет знак</span>
+      <h3>Харнесс</h3>
+      <p>Один формат, разные оболочки. На <code>dsf</code> CLI Spine последняя среди рук с контуром (0.62 против 0.92 и 0.92). На <code>glm</code> — первая (0.97 против 0.93 и 0.78).</p>
+      <p class="val">Это смена порядка рук, а не сокращение отставания.</p>
+    </div>
+    <div class="axis">
+      <span class="state base">задаёт базу</span>
+      <h3>Модель</h3>
+      <p>Рука без формата ловит <span class="val">0.40</span> на <code>dsf</code> и <span class="val">0.78</span> на <code>glm</code>. Голая модель без инструментов проходит гейт <span class="val">0.67</span> против <span class="val">0.17</span>.</p>
+      <p class="val">Эффект формата падает не потому, что формат хуже, а потому что закрывать стало нечего.</p>
+    </div>
+  </div>
+
+  <hr class="rule">
+
+  <div class="col">
+    <h2>Зарегистрированные пары с интервалами</h2>
+    <p>Парная разность по ячейкам «задача × повтор», bootstrap 95%. Полоса — доверительный интервал, вертикаль — ноль; <b>★</b> — интервал ноль не пересекает.</p>
+  </div>
+
+  <div class="forest">
+    <div class="frow">
+      <div class="nm">Формат Spine внутри Claude Code<small>claude-spine − claude-plain · dsf</small></div>
+      <div class="d g">+0.514</div>
+      <div class="track"><svg viewBox="0 0 260 34" role="img" aria-label="Поймано дефектов +0.514, интервал от 0.333 до 0.681, ноль не пересекает">
+        <line x1="130" y1="4" x2="130" y2="30" stroke="var(--rule)" stroke-width="1"/>
+        <line x1="176" y1="17" x2="240" y2="17" stroke="var(--gain)" stroke-width="3"/>
+        <line x1="176" y1="10" x2="176" y2="24" stroke="var(--gain)" stroke-width="2"/>
+        <line x1="240" y1="10" x2="240" y2="24" stroke="var(--gain)" stroke-width="2"/>
+        <circle cx="208" cy="17" r="4" fill="var(--gain)"/>
+        <text x="130" y="33" fill="var(--ink-soft)" font-family="IBM Plex Mono,monospace" font-size="9" text-anchor="middle">0</text>
+      </svg></div>
+    </div>
+    <div class="frow">
+      <div class="nm">Формат Spine внутри Claude Code<small>claude-spine − claude-plain · glm</small></div>
+      <div class="d n">+0.167</div>
+      <div class="track"><svg viewBox="0 0 260 34" role="img" aria-label="Поймано дефектов +0.167, интервал включает ноль — не значимо">
+        <line x1="130" y1="4" x2="130" y2="30" stroke="var(--rule)" stroke-width="1"/>
+        <line x1="124" y1="17" x2="182" y2="17" stroke="var(--flat)" stroke-width="3"/>
+        <line x1="124" y1="10" x2="124" y2="24" stroke="var(--flat)" stroke-width="2"/>
+        <line x1="182" y1="10" x2="182" y2="24" stroke="var(--flat)" stroke-width="2"/>
+        <circle cx="152" cy="17" r="4" fill="var(--flat)"/>
+        <text x="130" y="33" fill="var(--ink-soft)" font-family="IBM Plex Mono,monospace" font-size="9" text-anchor="middle">0</text>
+      </svg></div>
+    </div>
+    <div class="frow">
+      <div class="nm">CLI Spine против Claude Code<small>spine-arch − claude-spine · dsf</small></div>
+      <div class="d r">−0.333</div>
+      <div class="track"><svg viewBox="0 0 260 34" role="img" aria-label="Поймано дефектов минус 0.333, интервал от минус 0.556 до минус 0.130, ноль не пересекает">
+        <line x1="130" y1="4" x2="130" y2="30" stroke="var(--rule)" stroke-width="1"/>
+        <line x1="52" y1="17" x2="106" y2="17" stroke="var(--loss)" stroke-width="3"/>
+        <line x1="52" y1="10" x2="52" y2="24" stroke="var(--loss)" stroke-width="2"/>
+        <line x1="106" y1="10" x2="106" y2="24" stroke="var(--loss)" stroke-width="2"/>
+        <circle cx="79" cy="17" r="4" fill="var(--loss)"/>
+        <text x="130" y="33" fill="var(--ink-soft)" font-family="IBM Plex Mono,monospace" font-size="9" text-anchor="middle">0</text>
+      </svg></div>
+    </div>
+    <div class="frow">
+      <div class="nm">CLI Spine против Claude Code<small>spine-arch − claude-spine · glm</small></div>
+      <div class="d g">+0.347</div>
+      <div class="track"><svg viewBox="0 0 260 34" role="img" aria-label="Восстановлено структурных дефектов +0.347, интервал от 0.167 до 0.542, ноль не пересекает">
+        <line x1="130" y1="4" x2="130" y2="30" stroke="var(--rule)" stroke-width="1"/>
+        <line x1="152" y1="17" x2="232" y2="17" stroke="var(--gain)" stroke-width="3"/>
+        <line x1="152" y1="10" x2="152" y2="24" stroke="var(--gain)" stroke-width="2"/>
+        <line x1="232" y1="10" x2="232" y2="24" stroke="var(--gain)" stroke-width="2"/>
+        <circle cx="192" cy="17" r="4" fill="var(--gain)"/>
+        <text x="130" y="33" fill="var(--ink-soft)" font-family="IBM Plex Mono,monospace" font-size="9" text-anchor="middle">0</text>
+      </svg></div>
+    </div>
+  </div>
+  <p style="font-size:13.5px;color:var(--ink-soft);margin-top:10px">Четвёртая строка — другая метрика (восстановление структуры), приведена потому, что на <code>glm</code> она меняет знак вместе с оболочкой.</p>
+
+  <hr class="rule">
+
+  <div class="col">
+    <h2>Что формат не улучшил</h2>
+    <p>Две метрики остались на нуле, и это часть результата, а не умолчание: <b>трассируемость</b> «требование → решение» — разница +0.000, у рук без формата адресный след тоже есть; <b>«гейт пройден целиком»</b> — тоже +0.000, все руки его проходят, поэтому различает не бинарный признак, а доля зелёных правил (+0.064) и то, что поймано и что утекло.</p>
+  </div>
+
+  <div class="caveats">
+    <h3>Без чего числа читать нельзя</h3>
+    <ul>
+      <li><b>Оценка first-party.</b> Spine — система автора бенчмарка, и в паре «CLI Spine против Claude Code» она <b>проигрывает</b>. Это довод в пользу непредвзятости замера, но раскрытие остаётся раскрытием.</li>
+      <li><b>Один прогон</b> на 6 задачах и 2 повторах. Интервалы — bootstrap по парам; пары с базой 5–9 общих ячеек — ориентир, а не измерение.</li>
+      <li><b>Вклад формата в ловлю измерен только внутри Claude Code:</b> стадия «преемник», по которой считаются поймано и утекло, шла на четырёх руках, и обе стороны пары «формат против без формата» есть только там. Для Theseus и CLI Spine это ещё не проверено.</li>
+      <li><b>У рук Claude glm-половина потеряна</b> внешней квотой вендора, у Theseus часть ячеек не уложилась в единый бюджет времени. Обе потери названы, а не спрятаны.</li>
+      <li><b>Двенадцать дефектов измерения</b> найдены и исправлены по ходу — включая те, что до правки выглядели как результат: скорер не видел версию стадии 1, вендор отвергал 96% запросов одной руки, вместо работы 23 раза подставлялся входной файл бенчмарка.</li>
+    </ul>
+  </div>
+
+  <div class="foot">
+    <span>Полные таблицы и разбор отклонений — в репозитории:</span>
+    <a href="https://github.com/romannekrasovaillm/spine-contour-bench/blob/main/results/summary.md">results/summary.md</a>
+    <a href="https://github.com/romannekrasovaillm/spine-contour-bench/blob/main/DEVIATIONS.md">DEVIATIONS.md</a>
+    <a href="https://github.com/romannekrasovaillm/spine-contour-bench">spine-contour-bench</a>
+  </div>
+
+</div>
