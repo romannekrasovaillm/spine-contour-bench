@@ -317,6 +317,35 @@
   <hr class="rule">
 
   <div class="col">
+    <h2>Сколько это стоило</h2>
+    <p><b>1.04 млрд токенов</b> на измеренной части — 103 ячейки из 192. Это нижняя граница: учёт ведут два харнесса из пяти, у CLI Spine, kimi и голой модели его в журналах нет.</p>
+  </div>
+
+  <div class="forest" style="margin-top:18px">
+    <div class="frow" style="grid-template-columns:minmax(180px,1fr) 132px minmax(120px,1fr)">
+      <div class="nm">Claude Code с форматом Spine<small>claude-spine · 24 ячейки</small></div>
+      <div class="d r">570 млн</div>
+      <div class="nm" style="color:var(--ink-soft);font-size:14px">в 2.6 раза больше, чем без формата</div>
+    </div>
+    <div class="frow" style="grid-template-columns:minmax(180px,1fr) 132px minmax(120px,1fr)">
+      <div class="nm">Claude Code без формата<small>claude-plain · 24 ячейки</small></div>
+      <div class="d n">223 млн</div>
+      <div class="nm" style="color:var(--ink-soft);font-size:14px">база сравнения</div>
+    </div>
+    <div class="frow" style="grid-template-columns:minmax(180px,1fr) 132px minmax(120px,1fr)">
+      <div class="nm">Theseus с форматом Spine<small>theseus-spine · 20 ячеек</small></div>
+      <div class="d r">108 млн</div>
+      <div class="nm" style="color:var(--ink-soft);font-size:14px">против 43 млн без формата — в 2.5 раза</div>
+    </div>
+  </div>
+
+  <div class="col" style="margin-top:18px">
+    <p><b>Формат стоит токенов, и это видно в обеих оболочках</b> — примерно удвоение-утроение работы модели. Платится не за запись, а за перечитывание: у Claude Code ответ модели — <b>18 млн из 888</b> (2%), остальное — контекст, пересылаемый на каждом ходу.</p>
+  </div>
+
+  <hr class="rule">
+
+  <div class="col">
     <h2>Что формат не улучшил</h2>
     <p>Две метрики остались на нуле, и это часть результата, а не умолчание: <b>трассируемость</b> «требование → решение» — разница +0.000, у рук без формата адресный след тоже есть; <b>«гейт пройден целиком»</b> — тоже +0.000, все руки его проходят, поэтому различает не бинарный признак, а доля зелёных правил (+0.064) и то, что поймано и что утекло.</p>
   </div>
