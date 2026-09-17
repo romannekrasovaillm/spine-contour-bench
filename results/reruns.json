@@ -1,0 +1,118 @@
+{
+ "note": "Ячейки, перегнанные после прогона, с основанием. Пересечения нормальны: одна ячейка может быть недействительна по двум причинам.",
+ "families": [
+  {
+   "reason": "D19 доступ к дизайну (аудит журналов)",
+   "cells": [
+    "CMP-ARCH-001__claude-spine__dsf__r1",
+    "CMP-ARCH-001__claude-spine__glm__r1",
+    "CMP-ARCH-001__claude-spine__glm__r2",
+    "CMP-ARCH-001__spine-arch__dsf__r1",
+    "CMP-ARCH-001__spine-arch__dsf__r2",
+    "CMP-ARCH-001__spine-arch__glm__r1",
+    "CRX-CDC-001__spine-arch__glm__r2",
+    "PGL-ARCH-001__claude-spine__dsf__r2",
+    "PGL-ARCH-001__spine-arch__dsf__r1",
+    "PGL-ARCH-001__spine-min__dsf__r1",
+    "PGL-ARCH-001__spine-min__dsf__r2",
+    "PVH-ARCH-001__claude-spine__dsf__r1",
+    "SEC-ARCH-001__claude-arch__glm__r1",
+    "SEC-ARCH-001__claude-plain__dsf__r1",
+    "SEC-ARCH-001__claude-spine__dsf__r1",
+    "SEC-ARCH-001__claude-spine__dsf__r2",
+    "SYN-ARCH-001__spine-arch__dsf__r1",
+    "SYN-ARCH-001__spine-arch__dsf__r2"
+   ]
+  },
+  {
+   "reason": "D20 форма запроса к вендору (HTTP 400, санирующий слой)",
+   "cells": [
+    "CMP-ARCH-001__theseus-spine__glm__r1",
+    "PGL-ARCH-001__theseus-spine__glm__r1",
+    "PVH-ARCH-001__theseus-spine__glm__r1",
+    "PVH-ARCH-001__theseus-spine__glm__r2",
+    "SEC-ARCH-001__theseus-spine__glm__r1",
+    "SEC-ARCH-001__theseus-spine__glm__r2",
+    "SYN-ARCH-001__theseus-spine__glm__r1",
+    "SYN-ARCH-001__theseus-spine__glm__r2"
+   ],
+   "note": "условие изменено: добавлен слой, дописывающий поле content"
+  },
+  {
+   "reason": "D21 подстановка входного файла вместо работы руки",
+   "cells": [
+    "CMP-ARCH-001__theseus-plain__dsf__r1",
+    "CMP-ARCH-001__theseus-plain__dsf__r2",
+    "CMP-ARCH-001__theseus-spine__dsf__r1",
+    "CMP-ARCH-001__theseus-spine__dsf__r2",
+    "CRX-CDC-001__theseus-plain__dsf__r1",
+    "CRX-CDC-001__theseus-plain__dsf__r2",
+    "CRX-CDC-001__theseus-spine__dsf__r1",
+    "CRX-CDC-001__theseus-spine__dsf__r2",
+    "PGL-ARCH-001__theseus-plain__dsf__r1",
+    "PGL-ARCH-001__theseus-plain__dsf__r2",
+    "PGL-ARCH-001__theseus-spine__dsf__r2",
+    "PVH-ARCH-001__theseus-plain__dsf__r1",
+    "PVH-ARCH-001__theseus-plain__dsf__r2",
+    "PVH-ARCH-001__theseus-spine__dsf__r2",
+    "SEC-ARCH-001__theseus-plain__dsf__r1",
+    "SEC-ARCH-001__theseus-plain__dsf__r2",
+    "SEC-ARCH-001__theseus-spine__dsf__r1",
+    "SEC-ARCH-001__theseus-spine__dsf__r2",
+    "SYN-ARCH-001__theseus-plain__dsf__r1",
+    "SYN-ARCH-001__theseus-plain__dsf__r2",
+    "SYN-ARCH-001__theseus-spine__dsf__r1",
+    "SYN-ARCH-001__theseus-spine__dsf__r2",
+    "SYN-ARCH-001__theseus-spine__glm__r1"
+   ],
+   "note": "выявлено сверкой размера сданного артефакта с размером входного файла в том же work/ ДО сброса ячеек: 15 ячеек получили ACCEPTANCE.md, 8 — ARCHITECTURE-SPINE.md"
+  },
+  {
+   "reason": "D22 предел ходов 12 стоял только у этой руки; поднят до 300, связывающим остался единый бюджет 3000 с",
+   "cells": [
+    "CMP-ARCH-001__theseus-plain__dsf__r1",
+    "CMP-ARCH-001__theseus-plain__dsf__r2",
+    "CMP-ARCH-001__theseus-spine__dsf__r1",
+    "CMP-ARCH-001__theseus-spine__dsf__r2",
+    "CMP-ARCH-001__theseus-spine__glm__r1",
+    "CMP-ARCH-001__theseus-spine__glm__r2",
+    "CRX-CDC-001__theseus-plain__dsf__r1",
+    "CRX-CDC-001__theseus-plain__dsf__r2",
+    "CRX-CDC-001__theseus-spine__dsf__r1",
+    "CRX-CDC-001__theseus-spine__dsf__r2",
+    "CRX-CDC-001__theseus-spine__glm__r1",
+    "CRX-CDC-001__theseus-spine__glm__r2",
+    "PGL-ARCH-001__theseus-plain__dsf__r1",
+    "PGL-ARCH-001__theseus-plain__dsf__r2",
+    "PGL-ARCH-001__theseus-spine__dsf__r1",
+    "PGL-ARCH-001__theseus-spine__dsf__r2",
+    "PGL-ARCH-001__theseus-spine__glm__r1",
+    "PGL-ARCH-001__theseus-spine__glm__r2",
+    "PVH-ARCH-001__theseus-plain__dsf__r1",
+    "PVH-ARCH-001__theseus-plain__dsf__r2",
+    "PVH-ARCH-001__theseus-spine__dsf__r1",
+    "PVH-ARCH-001__theseus-spine__dsf__r2",
+    "PVH-ARCH-001__theseus-spine__glm__r1",
+    "PVH-ARCH-001__theseus-spine__glm__r2",
+    "SEC-ARCH-001__theseus-plain__dsf__r1",
+    "SEC-ARCH-001__theseus-plain__dsf__r2",
+    "SEC-ARCH-001__theseus-spine__dsf__r1",
+    "SEC-ARCH-001__theseus-spine__dsf__r2",
+    "SEC-ARCH-001__theseus-spine__glm__r1",
+    "SEC-ARCH-001__theseus-spine__glm__r2",
+    "SYN-ARCH-001__theseus-plain__dsf__r1",
+    "SYN-ARCH-001__theseus-plain__dsf__r2",
+    "SYN-ARCH-001__theseus-spine__dsf__r1",
+    "SYN-ARCH-001__theseus-spine__dsf__r2",
+    "SYN-ARCH-001__theseus-spine__glm__r1",
+    "SYN-ARCH-001__theseus-spine__glm__r2"
+   ],
+   "condition_changed": true
+  }
+ ],
+ "excluded_not_rerun": {
+  "reason": "внешняя квота glm на Anthropic-совместимом endpoint у рук Claude (429, код 1310, сброс 21.09); theseus и arch-be идут другим путём и не затронуты — D24",
+  "rule": "ячейки claude-* × glm, у которых стадия 2 не дала финала (нетронутый документ при ненулевом выходе), в зачёт не идут; их число видно в блоке целостности отчёта",
+  "count_hint": "точное число печатает contour_report.py в строке «ячеек без финального артефакта»"
+ }
+}

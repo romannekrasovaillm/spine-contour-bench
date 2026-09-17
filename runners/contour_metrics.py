@@ -216,7 +216,13 @@ def rule_restored(rule_item, final_text, v1_text, sents=None):
     op = rule_item.get("op")
     if op == "drop_section":
         want = rule_item.get("heading")
-        return bool(want) and bool(re.search(re.escape(normalize(want))[:40],
+        # ОБРЕЗАТЬ ДО ЭКРАНИРОВАНИЯ. Здесь было `re.escape(...)[:40]`: обрезка
+        # шла по экранированной строке, разрез попадал внутрь escape-последова-
+        # тельности и оставлял висячий обратный слэш — `re.error: bad escape
+        # (end of pattern)`, на котором встал весь счёт (ячейка
+        # SEC-ARCH-001__theseus-spine__dsf__r1). Экранирование и обрезка
+        # не коммутируют, и это ровно тот случай.
+        return bool(want) and bool(re.search(re.escape(normalize(want)[:40]),
                                              normalize(final_text)))
     if op == "break_trace":
         ids = rule_item.get("ids", [])

@@ -242,20 +242,85 @@ def score_defects(cell, v1_text, final_text):
     return out
 
 
+def _meta2(cell, key, default=None):
+    """Поле из meta2.json стадии 2 (или default, если файла нет/он битый)."""
+    p = cell / "meta2.json"
+    if not p.is_file():
+        return default
+    try:
+        return json.loads(p.read_text(encoding="utf-8")).get(key, default)
+    except ValueError:
+        return default
+
+
 def score_cell(cell):
     m = re.match(r"^(.+?)__(.+)__(dsf|glm)__r(\d+)$", cell.name)
     if not m:
         return None
     task, arm, model, rep = m.group(1), m.group(2), m.group(3), int(m.group(4))
     work = cell / "work"
-    v1p, finp = work / "answer.v1.md", work / "answer.md"
+    # Обе версии ищутся и в work/, и на уровне ЯЧЕЙКИ:
+    #   * v1 инъекция кладёт на уровень ячейки намеренно — копия внутри work/
+    #     давала преемнику нетронутый документ, к которому можно откатиться
+    #     вместо разбора v1.1 (D8). Скорер, искавший только work/answer.v1.md,
+    #     молча подставлял вместо v1 финал: тогда v1 == финал, разница гейтов
+    #     v1→финал и «восстановлено структурных дефектов» обнулялись у ВСЕХ
+    #     ячеек — то есть ключевая метрика контура не измерялась вовсе;
+    #   * финал рука вправе сдать в полученном документе, не создавая
+    #     answer.md заново (так делает theseus); раннер кладёт его в
+    #     cell/answer.md.
+    v1p = work / "answer.v1.md"
+    if not v1p.is_file():
+        v1p = cell / "answer.v1.md"
+    finp = work / "answer.md"
+    if not finp.is_file():
+        finp = cell / "answer.md"
     v1 = v1p.read_text(encoding="utf-8", errors="replace") if v1p.is_file() \
         else (finp.read_text(encoding="utf-8", errors="replace")
               if finp.is_file() else "")
     final = finp.read_text(encoding="utf-8", errors="replace") if finp.is_file() else ""
+    # ФИНАЛА НЕТ, если преемник не тронул документ, а процесс вышел нештатно.
+    # Такой «финал» — это нетронутый v1.1: сборщик собирает его, чтобы ячейка
+    # не выглядела пустой, но работы преемника в нём нет. Считать по нему
+    # метрики значило бы записать руке нули за исчерпанный бюджет или отказ
+    # среды (D20, D22) — то есть выдать поломку за свойство контура.
+    # Отличается от «отработал и не тронул» (exit 0): вот это — законный
+    # нулевой зачёт, и он остаётся.
+    if (_meta2(cell, "deliverable_source") == "wip"
+            and not _meta2(cell, "wip_modified")
+            and (_meta2(cell, "exit_code") or 0) != 0):
+        final = ""
+    # И ФИНАЛ, КОТОРЫЙ НЕ ДОКУМЕНТ, финалом не считается. Сборщик принимает за
+    # работу любой текст длиннее 500 байт — включая СООБЩЕНИЕ о работе. Так у
+    # одной ячейки (SYN-ARCH-001__spine-arch__dsf__r1) «документом» оказался
+    # вопрос к пользователю: рука в неинтерактивном режиме упёрлась в решение
+    # (превышение лимита слов) и спросила вместо того, чтобы решить. Это тот же
+    # класс, что D10 (raw-llm «отчитался» о создании файла). Критерий
+    # механический и проверяемый: у документа задачи есть заголовки разделов, и
+    # он не в двести слов. Считать по такому тексту метрики значило бы мерить
+    # контур по вопросу.
+    if final.strip():
+        heads = len(re.findall(r"(?m)^#{1,3} \S", final))
+        if heads < 3 and len(final.split()) < 1000:
+            final = ""
     rec = {
         "cell": cell.name, "task": task, "arm": arm, "model": model, "rep": rep,
         "stage2": (cell / "meta2.json").is_file(),
+        # Как именно сдана стадия 2 — это часть чтения результата, а не
+        # служебная мелочь: у theseus финал лежит в полученном документе
+        # (`wip`), а не в answer.md, и у него же встречались отказы среды
+        # (HTTP 400 от вендора, D20). Без этих полей «рука ничего не сделала»
+        # и «рука не смогла начать» в выгрузке неразличимы.
+        "deliverable_source": _meta2(cell, "deliverable_source"),
+        "wip_modified": _meta2(cell, "wip_modified"),
+        "stage2_error": bool(_meta2(cell, "error")),
+        "stage2_secs": _meta2(cell, "secs"),
+        # Код возврата процесса стадии 2. Отдельно от `stage2_error`: у ячеек,
+        # перегнанных ДО правки сборщика (D17/D20), ошибка не сохранялась, и
+        # «рука отработала, но документ не тронула» выглядело бы как чистая
+        # сдача. Метрику это не завышает (детектор считает по тексту), но
+        # читателю нужно видеть, что процесс завершился нештатно.
+        "stage2_exit": _meta2(cell, "exit_code"),
         "v1_words": pvlib.count_words(v1) if v1 else None,
         "final_words": pvlib.count_words(final) if final else None,
         "gate_v1": run_gate(cell.name, task, work,

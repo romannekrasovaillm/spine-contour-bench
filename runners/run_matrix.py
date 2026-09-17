@@ -11,6 +11,7 @@ meta.json: {task, condition, model, rep, cmd, secs, exit_code, bytes, ts}.
 Ключи не печатаются. Только stdlib.
 """
 import fnmatch
+import hashlib
 import json
 import os
 import re
@@ -30,6 +31,14 @@ BASE = pvlib.BASE
 CELLS = pvlib.CELLS_DIR
 LOGS = pvlib.LOGS_DIR
 MIN_ANSWER_BYTES = 500
+# Файлы, которые бенчмарк сам кладёт в рабочий каталог. Ни один из них не
+# может считаться работой руки: подстановка любого из них выдаёт чужой текст
+# за документ (D21). Список один и тот же для сбора финала у всех рук.
+SEEDED_FILES = frozenset((
+    "TASK.md", "CONTEXT.md", "AGENTS.md", "ACCEPTANCE.md",
+    "ARCHITECTURE-SPINE.md", "README.md", "CONSTRAINTS.yaml",
+    "CONSTRAINTS.contour.yaml", "RUBRICS.md", "CLAUDE.md",
+))
 TIMEOUT_AGENTIC = int(os.environ.get("PVBENCH_TIMEOUT_AGENTIC", "3000"))
 TIMEOUT_RAW = 600
 RETRIES = int(os.environ.get("PVBENCH_RETRIES", "2"))
@@ -108,8 +117,18 @@ def build_cmd(task, cond, model, prompt, uniq=""):
         return ["arch-be", "run", "-q", "--model", "deepseek-bench-think",
                 "--think", "on", "--timeout", "3600", prompt]
     if cond.startswith("theseus"):
-        return ["theseus", "-m", MODEL_IDS[model], "--yolo",
-                "--max-turns", THESEUS_MAX_TURNS, "-p", prompt]
+        argv = ["theseus", "-m", MODEL_IDS[model], "--yolo",
+                "--max-turns", THESEUS_MAX_TURNS]
+        # D20: вендор отвечает HTTP 400 на assistant-сообщение с reasoning и
+        # tool_calls без поля `content` — так строит запрос this харнесс, и
+        # 7 из 8 ячеек theseus × glm на стадии 2 падали, не начав работы.
+        # `sanitize_proxy.py` дописывает пустой `content` и ставится ПЕРЕД
+        # llm-proxy; адрес задаётся переменной, чтобы правка касалась только
+        # нужных ячеек и не меняла глобальный конфиг харнесса.
+        base = os.environ.get("PVBENCH_THESEUS_BASE_URL")
+        if base:
+            argv += ["--base-url", base]
+        return argv + ["-p", prompt]
     if cond.startswith("claude"):
         argv = ["claude", "-p", prompt, "--model", CLAUDE_MODELS[model],
                 "--dangerously-skip-permissions"]
@@ -237,10 +256,50 @@ def raw_call(model, prompt, timeout):
         return "", None, None, f"{type(e).__name__}: {str(e)[:160]}"
 
 
+def is_seeded_text(work, text):
+    """Текст побайтово совпал с входным файлом бенчмарка?
+
+    Структурный запрет на целый класс ошибок. Дважды за прогон сборщик принял
+    за работу руки текст, которого рука не писала: сначала форма артефакта
+    (D17), затем подстановка входного файла (D21 — 23 ячейки, где «документом»
+    оказались ACCEPTANCE.md и ARCHITECTURE-SPINE.md). Список имён в фолбэке
+    лечил симптом одного пути сбора; проверка по sha256 закрывает класс: какой
+    бы путь ни сработал, текст, совпавший с нашим же входным файлом, работой
+    руки не считается.
+    """
+    if not text:
+        return False
+    h = hashlib.sha256(text.encode("utf-8", "replace")).hexdigest()
+    for name in SEEDED_FILES:
+        p = work / name
+        if not p.is_file():
+            continue
+        try:
+            if hashlib.sha256(p.read_bytes()).hexdigest() == h:
+                return True
+        except OSError:
+            continue
+    return False
+
+
 def extract_theseus(work, stdout):
     """Ответ: последнее assistant-сообщение новейшей сессии .theseus/;
-    если оно пустое/короткое — черновик *.md, который агент писал в work/;
-    последний fallback — эвристика по stdout."""
+    если оно пустое/короткое — ЧЕРНОВИК САМОЙ РУКИ из work/;
+    последний fallback — эвристика по stdout.
+
+    ЧТО ЗДЕСЬ БЫЛО СЛОМАНО (D21). Список исключений в фолбэке знал только
+    TASK.md, CONTEXT.md и AGENTS.md — то есть файлы ЧУЖОГО бенчмарка. Файлы,
+    которые в work/ кладёт ЭТОТ (`ACCEPTANCE.md`, `ARCHITECTURE-SPINE.md`,
+    `CONSTRAINTS*.yaml`, `README.md`), в него не попали, и когда харнесс не
+    выдавал документа, фолбэк брал самый свежий *.md ≥2000 Б — то есть
+    подставленную нами же планку приёмки. Так у 23 ячеек theseus (64% руки)
+    «работой» оказался входной файл: у 15 — `ACCEPTANCE.md`, у 8 —
+    `ARCHITECTURE-SPINE.md`. Опаснее всего то, что такой документ выглядит
+    правдоподобно и ЗАВЫШАЕТ трассируемость: в планке приёмки перечислены
+    требования задачи. Теперь входные файлы исключены, а если черновика руки
+    нет — возвращается пусто, и ячейка честно записывается сбойной, а не
+    получает чужой текст.
+    """
     sd = work / ".theseus"
     try:
         sessions = sorted(sd.glob("session-*.json"),
@@ -255,7 +314,8 @@ def extract_theseus(work, stdout):
     except Exception:
         pass  # fallback — черновик в work/
     cands = [p for p in work.glob("*.md")
-             if p.name not in ("TASK.md", "CONTEXT.md", "AGENTS.md")
+             if p.name not in SEEDED_FILES
+             and not p.name.endswith(".contour.md")
              and p.stat().st_size >= 2000]
     if cands:
         best = max(cands, key=lambda p: p.stat().st_mtime)
@@ -409,6 +469,9 @@ def run_once(task, cond, model, cell, prompt_name="prompt.txt"):
         if cond.startswith("theseus"):
             salvaged = extract_theseus(work, out or "")
             if salvaged and len(salvaged.encode("utf-8")) >= MIN_ANSWER_BYTES:
+                if is_seeded_text(work, salvaged):
+                    return None, cmd_str, proc.returncode, None, \
+                        "сальвейдж совпал с входным файлом бенчмарка (D21)"
                 return salvaged, cmd_str, proc.returncode, \
                     f"salvage при exit {proc.returncode} (лимит ходов)", None
         return None, cmd_str, proc.returncode, None, err
@@ -429,6 +492,9 @@ def run_once(task, cond, model, cell, prompt_name="prompt.txt"):
     if len(answer.encode("utf-8")) < MIN_ANSWER_BYTES:
         return None, cmd_str, 0, None, \
             f"ответ слишком короткий ({len(answer.encode())} байт)"
+    if is_seeded_text(work, answer):
+        return None, cmd_str, 0, None, \
+            "текст совпал с входным файлом бенчмарка (D21)"
     return answer, cmd_str, 0, None, None
 
 

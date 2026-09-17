@@ -108,22 +108,63 @@ def process(cell_name):
     sem = rm.SEM[rm.channel(arm, model)]
     resume = work / "RESUME.md"
     before = resume.stat().st_mtime if resume.is_file() else None
+    wip = work / "WORK-IN-PROGRESS.md"
+    wip_before = wip.stat().st_mtime if wip.is_file() else None
     for attempt in range(rm.RETRIES + 1):
         with sem:
             answer, cmd_str, rc, err = run_successor(task, arm, model, cell)
         if answer is not None:
+            break
+        # Рука, работающая в полученном документе, не создаёт answer.md —
+        # без этой проверки раннер считал бы её сбойной и гонял все повторы
+        # подряд (для theseus это ~3 × 40 мин на ячейку при живой работе).
+        if wip_before is not None and wip.is_file() \
+                and wip.stat().st_mtime != wip_before:
             break
         time.sleep(rm.RETRY_SLEEP * (attempt + 1))
     dt = time.time() - t0
 
     src = "file"
     wf = work / "answer.md"
+    wip_modified = None
     if answer is not None:
         if wf.is_file() and wf.stat().st_size >= MIN_BYTES:
             answer = wf.read_text(encoding="utf-8", errors="replace")
         else:
             src = "stdout"
             wf.write_text(answer, encoding="utf-8")
+    elif (work / "WORK-IN-PROGRESS.md").is_file() \
+            and (work / "WORK-IN-PROGRESS.md").stat().st_size >= MIN_BYTES:
+        # Рука вправе довести работу прямо в полученном документе, не создавая
+        # answer.md заново (так ведёт себя theseus: правит v1.1 на месте).
+        # Требовать именно answer.md — значит измерять не работу преемника, а
+        # его готовность выполнить переименование; это тот же класс дефекта,
+        # что D10 (raw-llm «отчитался» о файле, которого не мог создать).
+        # Забираем v1.1 и отдельно фиксируем, был ли он вообще изменён:
+        # у преемника, не тронувшего документ, все внесённые тезисы останутся
+        # на месте и детектор покажет утечку 6/6 — то есть поблажки нет.
+        answer = wip.read_text(encoding="utf-8", errors="replace")
+        src = "wip"
+        inj = cell / "injection.json"
+        wip_modified = (inj.is_file()
+                        and wip.stat().st_mtime > inj.stat().st_mtime)
+        # Ошибку обнуляем ТОЛЬКО если преемник действительно правил документ.
+        # Иначе поломка среды (например, прокси отверг запрос — theseus × glm,
+        # D20) записывалась бы как сдача: сбор из документа возвращал бы
+        # нетронутый v1.1, а поле `error` было бы пустым, и ячейка выглядела
+        # бы как «рука ничего не сделала» вместо «рука не смогла начать».
+        if wip_modified:
+            err = None
+    # Тот же структурный запрет, что и на стадии 1: текст, совпавший с входным
+    # файлом бенчмарка, работой руки не считается (D21). На стадии 2 это
+    # страхует случай, когда преемник просто скопировал планку приёмки в
+    # финал, — тогда честнее сбой, чем «документ».
+    if answer is not None and rm.is_seeded_text(work, answer):
+        meta_err = "финал совпал с входным файлом бенчмарка (D21)"
+        answer = None
+    else:
+        meta_err = err
+    if answer is not None:
         (cell / "answer.stage2.md").write_text(answer, encoding="utf-8")
         # финал: answer.md на уровне ячейки = работа преемника
         # (версия стадии 1 уже сохранена как answer.v1.md)
@@ -133,9 +174,10 @@ def process(cell_name):
             "stage": 2, "cmd": cmd_str, "secs": round(dt, 1), "exit_code": rc,
             "bytes": len(answer.encode("utf-8")) if answer else 0,
             "deliverable_source": src,
+            "wip_modified": wip_modified,
             "resume_md_created": (resume.is_file()
                                   and resume.stat().st_mtime != before),
-            "error": err, "ts": time.strftime("%Y-%m-%dT%H:%M:%S%z")}
+            "error": meta_err, "ts": time.strftime("%Y-%m-%dT%H:%M:%S%z")}
     (cell / "meta2.json").write_text(
         json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
     with _log_lock:
@@ -143,9 +185,14 @@ def process(cell_name):
         with (LOGS / "stage2.jsonl").open("a", encoding="utf-8") as f:
             f.write(json.dumps(meta, ensure_ascii=False) + "\n")
     status = (f"ok {meta['bytes']}b {meta['secs']}s" if answer
-              else f"ERR {str(err)[:90]}")
+              else f"ERR {str(meta_err)[:90]}")
     resume_note = "RESUME.md:да" if meta["resume_md_created"] else "RESUME.md:НЕТ"
-    print(f"{cell_name}: {status}  {resume_note}", flush=True)
+    src_note = "" if meta["deliverable_source"] == "file" \
+        else f" [{meta['deliverable_source']}"
+    if meta["deliverable_source"] == "wip":
+        src_note += ", правлен" if meta["wip_modified"] else ", НЕ правлен"
+    src_note += "]" if src_note else ""
+    print(f"{cell_name}: {status}{src_note}  {resume_note}", flush=True)
     return meta
 
 
@@ -155,10 +202,39 @@ def main():
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--jobs", type=int, default=1,
                     help="сколько преемников гонять параллельно (по умолчанию 1)")
+    # --cells: явный список ячеек (можно с шаблонами). Нужен перегону: он
+    # идёт по конкретным уличенным ячейкам, а шаблон руки захватил бы и те
+    # ячейки, что ещё идут в волне, — одну ячейку повели бы два процесса, и
+    # замер был бы испорчен молча.
+    # Форма ОДНА на все три инструмента (reset_cells, prepare_stage2_rerun,
+    # stage2_resume): одна строка через пробел, а не список аргументов.
+    # Разнобой здесь уже один раз обнулил перегон: `--cells` без кавычек
+    # рассыпался в 13 аргументов, argparse их отверг, и все три шага прошли
+    # вхолостую — молча, если бы я не читал лог.
+    ap.add_argument("--cells", default=None,
+                    help="ячейки через пробел (можно с glob-шаблонами). "
+                         "Пустая строка — «ничего», а не «всё»")
+    ap.add_argument("--dry-run", action="store_true",
+                    help="показать, кого выбрали, и выйти (агенты не запускаются)")
     a = ap.parse_args()
+    # ПУСТОЙ СПИСОК — ЭТО «НИЧЕГО», а не «всё». Иначе вызов с пустым набором
+    # (например, из добивки финиша, где никого не нашлось) молча падал на маску
+    # `*` и брал в работу все незакрытые ячейки стенда. «Всё» задаётся
+    # отсутствием флага, а не его пустым значением.
+    if a.cells is None:
+        pats = None                      # флага не было — работаем по --only-glob
+    else:
+        pats = a.cells.split()           # флаг был: пусто = ничего
+        if not pats:
+            print("--cells пуст: выбирать нечего (это НЕ «все ячейки»)")
+            return 0
     names = []
     for p in sorted(CELLS.iterdir()):
-        if not p.is_dir() or not fnmatch.fnmatch(p.name, a.only_glob):
+        if not p.is_dir():
+            continue
+        hit = (any(fnmatch.fnmatch(p.name, x) for x in pats) if pats
+               else fnmatch.fnmatch(p.name, a.only_glob))
+        if not hit:
             continue
         m = re.match(r"^(.+?)__(.+)__(dsf|glm)__r(\d+)$", p.name)
         if not m or m.group(2) not in pc.STAGE2_ARMS:
@@ -182,6 +258,11 @@ def main():
         names = names[:a.limit]
     print(f"ячеек стадии 2 к прогону: {len(names)}; параллельно: {a.jobs}",
           flush=True)
+    if a.dry_run:
+        for n in names:
+            print(f"    {n}")
+        print("это выборка; агенты не запускались")
+        return 0
 
     def safe(n):
         try:

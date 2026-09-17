@@ -46,23 +46,33 @@ METRICS = {
 }
 
 # (метка, рука A, рука B, модель, метрика) — порядок = порядок отчёта
+# Пары сравнений. Пятый элемент — статус: "prereg" означает, что пара
+# зарегистрирована в PREREGISTRATION.md (H4 называет ровно две), остальные
+# исследовательские. Различие показывается в отчёте: иначе послекритериальный
+# выбор пар читался бы как подтверждение гипотезы, хотя это разведка.
 EFFECTS = [
     ("формат: claude-spine − claude-plain (dsf)", "claude-spine", "claude-plain",
-     "dsf", None),
-    ("формат: claude-spine − claude-arch (dsf)", "claude-spine", "claude-arch",
-     "dsf", None),
-    ("формат: spine-arch − spine-min (dsf)", "spine-arch", "spine-min",
-     "dsf", None),
+     "dsf", "prereg"),
     ("харнесс: spine-arch − claude-spine (dsf)", "spine-arch", "claude-spine",
-     "dsf", None),
+     "dsf", "prereg"),
+    ("формат: claude-spine − claude-arch (dsf)", "claude-spine", "claude-arch",
+     "dsf", "explore"),
+    ("формат: spine-arch − spine-min (dsf)", "spine-arch", "spine-min",
+     "dsf", "explore"),
+    ("формат: theseus-spine − theseus-plain (dsf)", "theseus-spine",
+     "theseus-plain", "dsf", "explore"),
     ("харнесс: spine-arch − theseus-spine (dsf)", "spine-arch", "theseus-spine",
-     "dsf", None),
+     "dsf", "explore"),
+    ("харнесс: spine-arch − kimi-plain (dsf)", "spine-arch", "kimi-plain",
+     "dsf", "explore"),
     ("формат: claude-spine − claude-plain (glm)", "claude-spine", "claude-plain",
-     "glm", None),
+     "glm", "prereg"),
     ("харнесс: spine-arch − claude-spine (glm)", "spine-arch", "claude-spine",
-     "glm", None),
+     "glm", "prereg"),
     ("контур против голой модели: spine-arch − raw-llm (dsf)", "spine-arch",
-     "raw-llm", "dsf", None),
+     "raw-llm", "dsf", "explore"),
+    ("контур против голой модели: spine-arch − raw-llm (glm)", "spine-arch",
+     "raw-llm", "glm", "explore"),
 ]
 
 
@@ -133,12 +143,21 @@ def main():
         return 1
     recs = [json.loads(x) for x in src.read_text(encoding="utf-8").splitlines()
             if x.strip()]
+    # Уличенные аудитом ячейки недействительны и в парных эффектах: иначе
+    # контаминация вернулась бы в публикуемые числа через чёрный ход —
+    # таблица средних её не видит, а парная разность считала бы по всем.
+    aud = pvlib.load_audit()
+    kept = pvlib.eligible_cells(recs, aud)
+    if len(kept) != len(recs):
+        print(f"исключено по изоляции: {len(recs) - len(kept)} ячеек "
+              f"(нарушение или нет журнала при наличии инструментов)")
+    recs = kept
     print(f"ячеек: {len(recs)}; задач: {len({r['task'] for r in recs})}; "
           f"рук: {len({r['arm'] for r in recs})}")
     metrics = [a.metric] if a.metric else list(METRICS)
     rng = random.Random(SEED)
     out = {}
-    for label, arm_a, arm_b, model, _ in EFFECTS:
+    for label, arm_a, arm_b, model, status in EFFECTS:
         row = {}
         for met in metrics:
             diffs = paired_diffs(recs, arm_a, arm_b, model, met)
@@ -148,7 +167,8 @@ def main():
             lo, hi = bootstrap_ci(diffs, rng)
             row[met] = {"diff": round(statistics.mean(diffs), 3),
                         "ci_lo": round(lo, 3), "ci_hi": round(hi, 3),
-                        "n_pairs": len(diffs), "metric": METRICS[met]}
+                        "n_pairs": len(diffs), "metric": METRICS[met],
+                        "status": status}
         out[label] = row
     if a.metric:
         print(f"\nметрика: {METRICS[a.metric]}")
