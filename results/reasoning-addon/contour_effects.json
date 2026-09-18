@@ -1,0 +1,406 @@
+{
+ "method": "парная разность по ячейкам «задача × повтор», bootstrap 95% CI (10000 ресэмплов, seed=42)",
+ "source": "runners/contour_effects.py из results/contour.jsonl",
+ "effects": {
+  "формат: claude-spine − claude-plain (dsf)": {
+   "caught": null,
+   "leaked": null,
+   "alarm": null,
+   "rules_restored": null,
+   "gate_pass": null,
+   "gate_green": null,
+   "trace_cov": null,
+   "packet": null,
+   "coverage": null,
+   "keyterm": null,
+   "resume": null
+  },
+  "харнесс: spine-arch − claude-spine (dsf)": {
+   "caught": {
+    "diff": -0.333,
+    "ci_lo": -0.556,
+    "ci_hi": -0.13,
+    "n_pairs": 9,
+    "metric": "поймано дефектов (доля из 6)",
+    "status": "prereg"
+   },
+   "leaked": {
+    "diff": 0.333,
+    "ci_lo": 0.13,
+    "ci_hi": 0.556,
+    "n_pairs": 9,
+    "metric": "утекло дефектов (доля из 6)",
+    "status": "prereg"
+   },
+   "alarm": {
+    "diff": 0.042,
+    "ci_lo": 0.0,
+    "ci_hi": 0.125,
+    "n_pairs": 8,
+    "metric": "ложных срабатываний (доля из 3)",
+    "status": "prereg"
+   },
+   "rules_restored": {
+    "diff": -0.185,
+    "ci_lo": -0.333,
+    "ci_hi": -0.037,
+    "n_pairs": 9,
+    "metric": "восстановлено структурных дефектов (доля)",
+    "status": "prereg"
+   },
+   "gate_pass": {
+    "diff": -0.111,
+    "ci_lo": -0.333,
+    "ci_hi": 0,
+    "n_pairs": 9,
+    "metric": "финал проходит гейт целиком",
+    "status": "prereg"
+   },
+   "gate_green": {
+    "diff": -0.154,
+    "ci_lo": -0.35,
+    "ci_hi": -0.043,
+    "n_pairs": 9,
+    "metric": "доля зелёных правил гейта в финале",
+    "status": "prereg"
+   },
+   "trace_cov": {
+    "diff": -0.111,
+    "ci_lo": -0.333,
+    "ci_hi": 0.0,
+    "n_pairs": 9,
+    "metric": "требований с адресным следом (доля)",
+    "status": "prereg"
+   },
+   "packet": {
+    "diff": -0.111,
+    "ci_lo": -0.333,
+    "ci_hi": 0,
+    "n_pairs": 9,
+    "metric": "пакет передачи полон (4 файла)",
+    "status": "prereg"
+   },
+   "coverage": {
+    "diff": -0.111,
+    "ci_lo": -0.333,
+    "ci_hi": 0.0,
+    "n_pairs": 9,
+    "metric": "семейств содержания в передаче (из 5)",
+    "status": "prereg"
+   },
+   "keyterm": {
+    "diff": 0.014,
+    "ci_lo": -0.028,
+    "ci_hi": 0.056,
+    "n_pairs": 9,
+    "metric": "ключевых терминов решения в RESUME.md (доля)",
+    "status": "prereg"
+   },
+   "resume": {
+    "diff": 0,
+    "ci_lo": 0,
+    "ci_hi": 0,
+    "n_pairs": 9,
+    "metric": "преемник написал RESUME.md",
+    "status": "prereg"
+   }
+  },
+  "формат: claude-spine − claude-arch (dsf)": {
+   "caught": null,
+   "leaked": null,
+   "alarm": null,
+   "rules_restored": null,
+   "gate_pass": null,
+   "gate_green": null,
+   "trace_cov": null,
+   "packet": null,
+   "coverage": null,
+   "keyterm": null,
+   "resume": null
+  },
+  "формат: spine-arch − spine-min (dsf)": {
+   "caught": null,
+   "leaked": null,
+   "alarm": null,
+   "rules_restored": null,
+   "gate_pass": null,
+   "gate_green": null,
+   "trace_cov": null,
+   "packet": null,
+   "coverage": null,
+   "keyterm": null,
+   "resume": null
+  },
+  "формат: theseus-spine − theseus-plain (dsf)": {
+   "caught": null,
+   "leaked": null,
+   "alarm": null,
+   "rules_restored": null,
+   "gate_pass": null,
+   "gate_green": null,
+   "trace_cov": null,
+   "packet": null,
+   "coverage": null,
+   "keyterm": null,
+   "resume": null
+  },
+  "харнесс: spine-arch − theseus-spine (dsf)": {
+   "caught": null,
+   "leaked": null,
+   "alarm": null,
+   "rules_restored": null,
+   "gate_pass": null,
+   "gate_green": null,
+   "trace_cov": null,
+   "packet": null,
+   "coverage": null,
+   "keyterm": null,
+   "resume": null
+  },
+  "харнесс: spine-arch − kimi-plain (dsf)": {
+   "caught": null,
+   "leaked": null,
+   "alarm": null,
+   "rules_restored": null,
+   "gate_pass": null,
+   "gate_green": null,
+   "trace_cov": null,
+   "packet": null,
+   "coverage": null,
+   "keyterm": null,
+   "resume": null
+  },
+  "формат: claude-spine − claude-plain (glm)": {
+   "caught": null,
+   "leaked": null,
+   "alarm": null,
+   "rules_restored": null,
+   "gate_pass": null,
+   "gate_green": null,
+   "trace_cov": null,
+   "packet": null,
+   "coverage": null,
+   "keyterm": null,
+   "resume": null
+  },
+  "харнесс: spine-arch − claude-spine (glm)": {
+   "caught": null,
+   "leaked": null,
+   "alarm": null,
+   "rules_restored": null,
+   "gate_pass": null,
+   "gate_green": null,
+   "trace_cov": null,
+   "packet": null,
+   "coverage": null,
+   "keyterm": null,
+   "resume": null
+  },
+  "контур против голой модели: spine-arch − raw-llm (dsf)": {
+   "caught": null,
+   "leaked": null,
+   "alarm": null,
+   "rules_restored": null,
+   "gate_pass": null,
+   "gate_green": null,
+   "trace_cov": null,
+   "packet": null,
+   "coverage": null,
+   "keyterm": null,
+   "resume": null
+  },
+  "контур против голой модели: spine-arch − raw-llm (glm)": {
+   "caught": null,
+   "leaked": null,
+   "alarm": null,
+   "rules_restored": null,
+   "gate_pass": null,
+   "gate_green": null,
+   "trace_cov": null,
+   "packet": null,
+   "coverage": null,
+   "keyterm": null,
+   "resume": null
+  },
+  "ризонинг: spine-arch-think − spine-arch (dsf)": {
+   "caught": {
+    "diff": 0.241,
+    "ci_lo": -0.167,
+    "ci_hi": 0.593,
+    "n_pairs": 9,
+    "metric": "поймано дефектов (доля из 6)",
+    "status": "explore"
+   },
+   "leaked": {
+    "diff": -0.241,
+    "ci_lo": -0.593,
+    "ci_hi": 0.167,
+    "n_pairs": 9,
+    "metric": "утекло дефектов (доля из 6)",
+    "status": "explore"
+   },
+   "alarm": {
+    "diff": -0.042,
+    "ci_lo": -0.125,
+    "ci_hi": 0.0,
+    "n_pairs": 8,
+    "metric": "ложных срабатываний (доля из 3)",
+    "status": "explore"
+   },
+   "rules_restored": {
+    "diff": 0.093,
+    "ci_lo": -0.111,
+    "ci_hi": 0.296,
+    "n_pairs": 9,
+    "metric": "восстановлено структурных дефектов (доля)",
+    "status": "explore"
+   },
+   "gate_pass": {
+    "diff": 0.111,
+    "ci_lo": 0,
+    "ci_hi": 0.333,
+    "n_pairs": 9,
+    "metric": "финал проходит гейт целиком",
+    "status": "explore"
+   },
+   "gate_green": {
+    "diff": 0.137,
+    "ci_lo": 0.017,
+    "ci_hi": 0.342,
+    "n_pairs": 9,
+    "metric": "доля зелёных правил гейта в финале",
+    "status": "explore"
+   },
+   "trace_cov": {
+    "diff": 0.111,
+    "ci_lo": 0.0,
+    "ci_hi": 0.333,
+    "n_pairs": 9,
+    "metric": "требований с адресным следом (доля)",
+    "status": "explore"
+   },
+   "packet": {
+    "diff": 0.111,
+    "ci_lo": 0,
+    "ci_hi": 0.333,
+    "n_pairs": 9,
+    "metric": "пакет передачи полон (4 файла)",
+    "status": "explore"
+   },
+   "coverage": {
+    "diff": 0.067,
+    "ci_lo": -0.067,
+    "ci_hi": 0.267,
+    "n_pairs": 9,
+    "metric": "семейств содержания в передаче (из 5)",
+    "status": "explore"
+   },
+   "keyterm": {
+    "diff": -0.028,
+    "ci_lo": -0.069,
+    "ci_hi": 0.0,
+    "n_pairs": 9,
+    "metric": "ключевых терминов решения в RESUME.md (доля)",
+    "status": "explore"
+   },
+   "resume": {
+    "diff": 0,
+    "ci_lo": 0,
+    "ci_hi": 0,
+    "n_pairs": 9,
+    "metric": "преемник написал RESUME.md",
+    "status": "explore"
+   }
+  },
+  "ризонинг: spine-arch-think − claude-spine (dsf)": {
+   "caught": {
+    "diff": -0.056,
+    "ci_lo": -0.278,
+    "ci_hi": 0.139,
+    "n_pairs": 12,
+    "metric": "поймано дефектов (доля из 6)",
+    "status": "explore"
+   },
+   "leaked": {
+    "diff": 0.056,
+    "ci_lo": -0.139,
+    "ci_hi": 0.278,
+    "n_pairs": 12,
+    "metric": "утекло дефектов (доля из 6)",
+    "status": "explore"
+   },
+   "alarm": {
+    "diff": 0.0,
+    "ci_lo": 0.0,
+    "ci_hi": 0.0,
+    "n_pairs": 10,
+    "metric": "ложных срабатываний (доля из 3)",
+    "status": "explore"
+   },
+   "rules_restored": {
+    "diff": -0.069,
+    "ci_lo": -0.167,
+    "ci_hi": 0.0,
+    "n_pairs": 12,
+    "metric": "восстановлено структурных дефектов (доля)",
+    "status": "explore"
+   },
+   "gate_pass": {
+    "diff": 0,
+    "ci_lo": 0,
+    "ci_hi": 0,
+    "n_pairs": 12,
+    "metric": "финал проходит гейт целиком",
+    "status": "explore"
+   },
+   "gate_green": {
+    "diff": -0.013,
+    "ci_lo": -0.038,
+    "ci_hi": 0.013,
+    "n_pairs": 12,
+    "metric": "доля зелёных правил гейта в финале",
+    "status": "explore"
+   },
+   "trace_cov": {
+    "diff": 0.0,
+    "ci_lo": 0.0,
+    "ci_hi": 0.0,
+    "n_pairs": 12,
+    "metric": "требований с адресным следом (доля)",
+    "status": "explore"
+   },
+   "packet": {
+    "diff": 0,
+    "ci_lo": 0,
+    "ci_hi": 0,
+    "n_pairs": 12,
+    "metric": "пакет передачи полон (4 файла)",
+    "status": "explore"
+   },
+   "coverage": {
+    "diff": -0.033,
+    "ci_lo": -0.083,
+    "ci_hi": 0.0,
+    "n_pairs": 12,
+    "metric": "семейств содержания в передаче (из 5)",
+    "status": "explore"
+   },
+   "keyterm": {
+    "diff": 0.01,
+    "ci_lo": -0.052,
+    "ci_hi": 0.073,
+    "n_pairs": 12,
+    "metric": "ключевых терминов решения в RESUME.md (доля)",
+    "status": "explore"
+   },
+   "resume": {
+    "diff": 0,
+    "ci_lo": 0,
+    "ci_hi": 0,
+    "n_pairs": 12,
+    "metric": "преемник написал RESUME.md",
+    "status": "explore"
+   }
+  }
+ }
+}

@@ -1,0 +1,330 @@
+[
+ {
+  "cell": "CMP-ARCH-001__claude-spine__dsf__r1",
+  "sources": {
+   "claude": []
+  },
+  "violations": [],
+  "blocked": false,
+  "access": false
+ },
+ {
+  "cell": "CMP-ARCH-001__claude-spine__dsf__r2",
+  "sources": {
+   "claude": []
+  },
+  "violations": [],
+  "blocked": false,
+  "access": false
+ },
+ {
+  "cell": "CMP-ARCH-001__spine-arch-think__dsf__r1",
+  "sources": {
+   "arch-be": []
+  },
+  "violations": [],
+  "blocked": false,
+  "access": false
+ },
+ {
+  "cell": "CMP-ARCH-001__spine-arch-think__dsf__r2",
+  "sources": {
+   "arch-be": []
+  },
+  "violations": [],
+  "blocked": false,
+  "access": false
+ },
+ {
+  "cell": "CMP-ARCH-001__spine-arch__dsf__r1",
+  "sources": {},
+  "violations": [],
+  "blocked": false,
+  "access": false
+ },
+ {
+  "cell": "CMP-ARCH-001__spine-arch__dsf__r2",
+  "sources": {
+   "arch-be": [
+    "файл-дизайна",
+    "чтение-файла-дизайна"
+   ]
+  },
+  "violations": [
+   "файл-дизайна",
+   "чтение-файла-дизайна"
+  ],
+  "blocked": true,
+  "access": false
+ },
+ {
+  "cell": "CRX-CDC-001__claude-spine__dsf__r1",
+  "sources": {
+   "claude": []
+  },
+  "violations": [],
+  "blocked": false,
+  "access": false
+ },
+ {
+  "cell": "CRX-CDC-001__claude-spine__dsf__r2",
+  "sources": {
+   "claude": []
+  },
+  "violations": [],
+  "blocked": false,
+  "access": false
+ },
+ {
+  "cell": "CRX-CDC-001__spine-arch-think__dsf__r1",
+  "sources": {
+   "arch-be": []
+  },
+  "violations": [],
+  "blocked": false,
+  "access": false
+ },
+ {
+  "cell": "CRX-CDC-001__spine-arch-think__dsf__r2",
+  "sources": {
+   "arch-be": []
+  },
+  "violations": [],
+  "blocked": false,
+  "access": false
+ },
+ {
+  "cell": "CRX-CDC-001__spine-arch__dsf__r1",
+  "sources": {
+   "arch-be": []
+  },
+  "violations": [],
+  "blocked": false,
+  "access": false
+ },
+ {
+  "cell": "CRX-CDC-001__spine-arch__dsf__r2",
+  "sources": {
+   "arch-be": []
+  },
+  "violations": [],
+  "blocked": false,
+  "access": false
+ },
+ {
+  "cell": "PGL-ARCH-001__claude-spine__dsf__r1",
+  "sources": {
+   "claude": []
+  },
+  "violations": [],
+  "blocked": false,
+  "access": false
+ },
+ {
+  "cell": "PGL-ARCH-001__claude-spine__dsf__r2",
+  "sources": {
+   "claude": []
+  },
+  "violations": [],
+  "blocked": false,
+  "access": false
+ },
+ {
+  "cell": "PGL-ARCH-001__spine-arch-think__dsf__r1",
+  "sources": {
+   "arch-be": []
+  },
+  "violations": [],
+  "blocked": false,
+  "access": false
+ },
+ {
+  "cell": "PGL-ARCH-001__spine-arch-think__dsf__r2",
+  "sources": {
+   "arch-be": []
+  },
+  "violations": [],
+  "blocked": false,
+  "access": false
+ },
+ {
+  "cell": "PGL-ARCH-001__spine-arch__dsf__r1",
+  "sources": {
+   "arch-be": [
+    "чтение-файла-дизайна"
+   ]
+  },
+  "violations": [
+   "чтение-файла-дизайна"
+  ],
+  "blocked": true,
+  "access": false
+ },
+ {
+  "cell": "PGL-ARCH-001__spine-arch__dsf__r2",
+  "sources": {},
+  "violations": [],
+  "blocked": false,
+  "access": false
+ },
+ {
+  "cell": "PVH-ARCH-001__claude-spine__dsf__r1",
+  "sources": {
+   "claude": []
+  },
+  "violations": [],
+  "blocked": false,
+  "access": false
+ },
+ {
+  "cell": "PVH-ARCH-001__claude-spine__dsf__r2",
+  "sources": {
+   "claude": []
+  },
+  "violations": [],
+  "blocked": false,
+  "access": false
+ },
+ {
+  "cell": "PVH-ARCH-001__spine-arch-think__dsf__r1",
+  "sources": {
+   "arch-be": []
+  },
+  "violations": [],
+  "blocked": false,
+  "access": false
+ },
+ {
+  "cell": "PVH-ARCH-001__spine-arch-think__dsf__r2",
+  "sources": {
+   "arch-be": []
+  },
+  "violations": [],
+  "blocked": false,
+  "access": false
+ },
+ {
+  "cell": "PVH-ARCH-001__spine-arch__dsf__r1",
+  "sources": {
+   "arch-be": []
+  },
+  "violations": [],
+  "blocked": false,
+  "access": false
+ },
+ {
+  "cell": "PVH-ARCH-001__spine-arch__dsf__r2",
+  "sources": {},
+  "violations": [],
+  "blocked": false,
+  "access": false
+ },
+ {
+  "cell": "SEC-ARCH-001__claude-spine__dsf__r1",
+  "sources": {
+   "claude": []
+  },
+  "violations": [],
+  "blocked": false,
+  "access": false
+ },
+ {
+  "cell": "SEC-ARCH-001__claude-spine__dsf__r2",
+  "sources": {
+   "claude": []
+  },
+  "violations": [],
+  "blocked": false,
+  "access": false
+ },
+ {
+  "cell": "SEC-ARCH-001__spine-arch-think__dsf__r1",
+  "sources": {
+   "arch-be": []
+  },
+  "violations": [],
+  "blocked": false,
+  "access": false
+ },
+ {
+  "cell": "SEC-ARCH-001__spine-arch-think__dsf__r2",
+  "sources": {
+   "arch-be": []
+  },
+  "violations": [],
+  "blocked": false,
+  "access": false
+ },
+ {
+  "cell": "SEC-ARCH-001__spine-arch__dsf__r1",
+  "sources": {
+   "arch-be": []
+  },
+  "violations": [],
+  "blocked": false,
+  "access": false
+ },
+ {
+  "cell": "SEC-ARCH-001__spine-arch__dsf__r2",
+  "sources": {
+   "arch-be": []
+  },
+  "violations": [],
+  "blocked": false,
+  "access": false
+ },
+ {
+  "cell": "SYN-ARCH-001__claude-spine__dsf__r1",
+  "sources": {
+   "claude": []
+  },
+  "violations": [],
+  "blocked": false,
+  "access": false
+ },
+ {
+  "cell": "SYN-ARCH-001__claude-spine__dsf__r2",
+  "sources": {
+   "claude": []
+  },
+  "violations": [],
+  "blocked": false,
+  "access": false
+ },
+ {
+  "cell": "SYN-ARCH-001__spine-arch-think__dsf__r1",
+  "sources": {
+   "arch-be": []
+  },
+  "violations": [],
+  "blocked": false,
+  "access": false
+ },
+ {
+  "cell": "SYN-ARCH-001__spine-arch-think__dsf__r2",
+  "sources": {
+   "arch-be": []
+  },
+  "violations": [],
+  "blocked": false,
+  "access": false
+ },
+ {
+  "cell": "SYN-ARCH-001__spine-arch__dsf__r1",
+  "sources": {
+   "arch-be": []
+  },
+  "violations": [],
+  "blocked": false,
+  "access": false
+ },
+ {
+  "cell": "SYN-ARCH-001__spine-arch__dsf__r2",
+  "sources": {
+   "arch-be": []
+  },
+  "violations": [],
+  "blocked": false,
+  "access": false
+ }
+]
