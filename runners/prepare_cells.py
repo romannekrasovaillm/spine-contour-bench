@@ -45,6 +45,15 @@ CUSTOM = BASE / "customization" / "architect.md"
 ARMS = {
     "spine-arch":    ("arch-be", "pack"),
     "spine-min":     ("arch-be", None),
+    # Догон 18.09: та же CLI Spine и тот же пакет, но ризонинг ВКЛЮЧЁН.
+    # Причина — конфаунд, найденный при разборе оси «модель»: у модели
+    # `deepseek-flash` ризонинг включён по умолчанию (запрос без поля
+    # `thinking` отдаёт reasoning_content), поэтому `--think off` в
+    # build_cmd делает spine-arch ЕДИНСТВЕННОЙ рукой на dsf, у которой
+    # рассуждение выключено; claude-* работали с ним (в транскриптах сессий
+    # есть блоки thinking), theseus/kimi/openclaw — тоже по умолчанию.
+    # Пара spine-arch-think − spine-arch разделяет оболочку и режим.
+    "spine-arch-think": ("arch-be", "pack"),
     "claude-spine":  ("claude", "pack"),
     "theseus-spine": ("theseus", "pack"),
     "claude-arch":   ("claude", "persona"),
@@ -60,9 +69,18 @@ MATRIX = {
     "glm": ["spine-arch", "claude-spine", "theseus-spine", "claude-arch",
             "claude-plain", "kimi-plain", "raw-llm"],
 }
+# Руки ДОГОНОВ (см. DEVIATIONS.md D27): в зачётную матрицу не входят, иначе
+# `python3 runners/prepare_cells.py` перестал бы воспроизводить зачётный прогон
+# (192 ячейки → 216). Достаются только по явному запросу через
+# PVBENCH_CONDITIONS: так они воспроизводимы и при этом не меняют матрицу.
+EXTRA_MATRIX = {
+    "dsf": ["spine-arch-think"],
+    "glm": [],
+}
 REPS = {"dsf": 2, "glm": 2}
 # Руки, для которых гоняется стадия 2 (преемник)
-STAGE2_ARMS = ("spine-arch", "claude-spine", "theseus-spine", "claude-plain")
+STAGE2_ARMS = ("spine-arch", "spine-arch-think", "claude-spine",
+               "theseus-spine", "claude-plain")
 
 WRAPPER = (
     "Ты — ведущий архитектор решений в ДКА банка. Прочитай TASK.md и "
@@ -342,6 +360,10 @@ def main():
         for model, arms in MATRIX.items():
             if models_filter and model not in models_filter:
                 continue
+            # Руки догонов (EXTRA_MATRIX) — только по явному запросу в
+            # PVBENCH_CONDITIONS: прогон по умолчанию остаётся зачётным.
+            arms = list(arms) + [a for a in EXTRA_MATRIX.get(model, [])
+                                 if arms_filter and a in arms_filter]
             for arm in arms:
                 if arms_filter and arm not in arms_filter:
                     continue

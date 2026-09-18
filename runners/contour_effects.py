@@ -73,6 +73,17 @@ EFFECTS = [
      "raw-llm", "dsf", "explore"),
     ("контур против голой модели: spine-arch − raw-llm (glm)", "spine-arch",
      "raw-llm", "glm", "explore"),
+    # Догон 18.09: единственная пара, где меняется ТОЛЬКО режим рассуждения.
+    # Одна оболочка, один формат, один промпт, одни задачи и повторы —
+    # разница в том, что у модели включён ризонинг (`--think on` против
+    # `--think off`). Заведена после разбора конфаунда оси «модель»:
+    # `--think off` применялся только к spine-arch, а claude-* на dsf шли
+    # с рассуждением, из-за чего −0.333 могла быть разницей не оболочек,
+    # а режима (README, раздел «Как влияет модель»).
+    ("ризонинг: spine-arch-think − spine-arch (dsf)", "spine-arch-think",
+     "spine-arch", "dsf", "explore"),
+    ("ризонинг: spine-arch-think − claude-spine (dsf)", "spine-arch-think",
+     "claude-spine", "dsf", "explore"),
 ]
 
 
